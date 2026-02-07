@@ -1,0 +1,72 @@
+# Uptime Statistics
+
+Detailed uptime calculation methodology and performance breakdown.
+
+## Uptime Calculation
+
+Uptime is calculated as:
+
+```
+Uptime % = (Total Checks - Failed Checks) / Total Checks * 100
+```
+
+### What Counts as a Failure
+
+A check is counted as failed when:
+
+- The HTTP status code does not match the expected status code
+- The response validation fails
+- The connection times out
+- A network error occurs
+- The TCP/UDP connection is refused
+
+### What Doesn't Count
+
+The following are excluded from uptime calculations:
+
+- **Paused periods** - Time when the check is paused
+- **Smart verification passes** - If the 30-second re-check succeeds, the initial failure is not counted
+- **Maintenance windows** - Documented maintenance periods (if annotated)
+
+## Performance Breakdown
+
+Each check captures detailed timing metrics:
+
+### DNS Lookup
+Time to resolve the domain name to an IP address.
+
+| Metric | Description |
+|---|---|
+| Average | Typical DNS resolution time |
+| P95 | 95th percentile DNS time |
+| Max | Slowest DNS resolution |
+
+### TCP Connect
+Time to establish the TCP connection after DNS resolution.
+
+### TLS Handshake
+Time to complete the TLS/SSL handshake (HTTPS only). Includes certificate verification.
+
+### Time to First Byte (TTFB)
+Time from sending the request to receiving the first byte of the response. This is often the most meaningful metric for server-side performance.
+
+### Total Response Time
+The complete end-to-end time: DNS + Connect + TLS + TTFB + Content Transfer.
+
+## Viewing Statistics
+
+### Per-Check Stats
+Navigate to a check's detail page to see its uptime statistics and performance breakdown.
+
+### Aggregated Stats
+The dashboard provides an overview of uptime across all checks.
+
+### API Access
+Access uptime statistics programmatically via the [Check Stats API endpoint](/api-reference/check-stats).
+
+## Best Practices
+
+- Use TTFB as the primary metric for server-side performance
+- Monitor DNS resolution time for CDN and DNS provider performance
+- Track TLS handshake time to identify certificate issues
+- Compare performance across regions to identify geographic bottlenecks

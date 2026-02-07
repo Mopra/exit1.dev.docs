@@ -1,0 +1,54 @@
+# Authentication
+
+The exit1.dev API uses API keys for authentication.
+
+## API Keys
+
+### Creating a Key
+
+1. Navigate to **Settings** > **API**
+2. Click **Create API Key**
+3. Copy the generated key immediately (it won't be shown again)
+
+You can create up to **2 API keys** per account.
+
+### Key Format
+
+API keys follow the format:
+
+```
+ek_live_<64 hex characters>
+```
+
+Example:
+
+```
+ek_live_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+```
+
+### Using the Key
+
+Include your API key in the `X-Api-Key` header with every request:
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks
+```
+
+### Revoking a Key
+
+To revoke an API key:
+
+1. Navigate to **Settings** > **API**
+2. Click **Revoke** next to the key
+3. Confirm the revocation
+
+Revoked keys are immediately invalidated. Any requests using a revoked key will receive a `401 Unauthorized` response.
+
+## Security Best Practices
+
+- Never expose API keys in client-side code or public repositories
+- Use environment variables to store API keys
+- Rotate keys periodically
+- Revoke unused keys immediately
+- Each key has independent rate limits

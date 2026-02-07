@@ -1,0 +1,40 @@
+# Alerting
+
+exit1.dev provides multi-channel alerting to keep you informed when your checks change status.
+
+## Alert Channels
+
+| Channel | Free Plan | Nano Plan |
+|---|---|---|
+| Email | 10/hour, 10/month | 1,000/month |
+| SMS | Not available | Available (20/month) |
+| Team Alerts | Not available | Available |
+| Webhooks | 1 | Unlimited |
+| Slack | Available | Available |
+| Discord | Available | Available |
+
+## How Alerting Works
+
+1. A check runs and detects a status change (e.g., up to down)
+2. Smart verification re-checks after 30 seconds to confirm
+3. The consecutive failure threshold is evaluated
+4. If the threshold is met, alerts are dispatched to all configured channels
+5. When the check recovers, recovery alerts are sent
+
+## Flap Suppression
+
+To prevent alert fatigue from flapping services (rapidly alternating between up and down), exit1.dev uses the `minConsecutiveEvents` setting. This requires a minimum number of consecutive events before triggering an alert, reducing noise from unstable endpoints.
+
+## Alert Configuration
+
+Alerts can be configured at two levels:
+
+- **Account level** - Default alert settings applied to all checks
+- **Per-check level** - Override settings for individual checks
+
+## Getting Started
+
+- [Email Alerts](/alerting/email-alerts) - Configure email notifications
+- [SMS Alerts](/alerting/sms-alerts) - Set up SMS notifications (Nano plan)
+- [Webhook Alerts](/alerting/webhook-alerts) - Integrate with your systems
+- [Alert Events](/alerting/alert-events) - Full event reference

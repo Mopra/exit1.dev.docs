@@ -1,0 +1,102 @@
+# Webhooks
+
+Webhooks let you receive real-time notifications about check events at any HTTP endpoint.
+
+## Setup
+
+### Adding a Webhook
+
+1. Navigate to **Settings** > **Integrations** > **Webhooks**
+2. Click **Add Webhook**
+3. Enter the webhook URL (must be HTTPS)
+4. Optionally add custom headers for authentication
+5. Save the webhook
+
+You can configure up to **5 webhooks** per account.
+
+### Custom Headers
+
+Add custom headers to authenticate incoming webhook requests:
+
+```
+Authorization: Bearer your-webhook-secret
+X-Webhook-Source: exit1-dev
+```
+
+## Event Payload
+
+All webhook events are sent as `POST` requests with a JSON body:
+
+```json
+{
+  "event": "website_down",
+  "check": {
+    "id": "abc123",
+    "name": "Production API",
+    "url": "https://api.example.com/health",
+    "type": "api",
+    "method": "GET"
+  },
+  "status": {
+    "current": "down",
+    "previous": "up",
+    "statusCode": 503,
+    "responseTime": null,
+    "error": "Service Unavailable"
+  },
+  "region": "us-central",
+  "timestamp": "2025-01-15T14:30:00Z"
+}
+```
+
+### Event Types
+
+See the full [Alert Events](/alerting/alert-events) reference for all event types.
+
+## Retry Behavior
+
+Failed webhook deliveries are retried with exponential backoff:
+
+| Attempt | Delay After Failure |
+|---|---|
+| 1 | Immediate |
+| 2 | 1 minute |
+| 3 | 2 minutes |
+| 4 | 4 minutes |
+| 5 | 8 minutes |
+| 6 | 16 minutes |
+| 7 | 32 minutes |
+| 8 | 64 minutes |
+
+A delivery is considered failed if:
+- The endpoint returns a non-2xx status code
+- The connection times out (10 second timeout)
+- The endpoint is unreachable
+
+## Testing
+
+Test your webhook configuration:
+
+1. Set up your webhook endpoint
+2. Click **Send Test** in the webhook settings
+3. Verify your endpoint receives the test payload
+4. Check the response in the webhook delivery log
+
+## Health Monitoring
+
+exit1.dev tracks the health of your webhook endpoints:
+
+- **Healthy** - Recent deliveries are succeeding
+- **Degraded** - Some deliveries are failing
+- **Unhealthy** - Consecutive deliveries have failed
+
+Unhealthy webhooks are flagged in the dashboard. Fix the underlying issue and the webhook will automatically recover.
+
+## Best Practices
+
+- Always use HTTPS endpoints
+- Implement webhook signature verification using custom headers
+- Return a 200 response within 10 seconds
+- Process webhook payloads asynchronously
+- Implement idempotency (the same event may be delivered more than once due to retries)
+- Monitor webhook health in the dashboard

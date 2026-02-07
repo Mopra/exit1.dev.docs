@@ -1,0 +1,56 @@
+# Domain Intelligence Setup
+
+Learn how to enable and configure Domain Intelligence for your monitoring checks.
+
+## Prerequisites
+
+- An active **Nano plan** subscription
+- At least one monitoring check with a domain-based URL
+
+## Enabling Domain Intelligence
+
+### Per-Check Setup
+
+1. Navigate to the check you want to enable Domain Intelligence for
+2. Open the check settings
+3. Toggle **Domain Intelligence** to enabled
+4. Save the check
+
+The domain will be automatically extracted from the check URL and monitoring will begin.
+
+### Automatic Domain Extraction
+
+exit1.dev automatically extracts the base domain from your check URL:
+
+| Check URL | Extracted Domain |
+|---|---|
+| `https://www.example.com/health` | `example.com` |
+| `https://api.example.com/v1/status` | `example.com` |
+| `https://app.example.co.uk` | `example.co.uk` |
+
+## Domain Information
+
+Once enabled, exit1.dev retrieves and displays:
+
+- **Registrar** - The domain registrar
+- **Registration date** - When the domain was first registered
+- **Expiration date** - When the domain registration expires
+- **Last updated** - When the registration was last modified
+- **Status codes** - Domain status flags (e.g., clientTransferProhibited)
+
+## RDAP Protocol
+
+exit1.dev uses the **Registration Data Access Protocol (RDAP)** to query domain information. RDAP is the modern replacement for WHOIS, offering:
+
+- Standardized JSON responses
+- Better internationalization support
+- Access control and authentication capabilities
+- Referral support across registries
+
+## Troubleshooting
+
+### Domain not found
+If Domain Intelligence shows "domain not found," the TLD may not support RDAP. Check the IANA RDAP Bootstrap file for supported TLDs.
+
+### Stale data
+Domain registration data is cached and refreshed periodically. If you've recently renewed a domain, it may take some time for the updated expiration date to appear.

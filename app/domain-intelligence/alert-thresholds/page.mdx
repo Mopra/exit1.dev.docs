@@ -1,0 +1,61 @@
+# Alert Thresholds
+
+Configure when you receive alerts about upcoming domain expirations.
+
+## Default Thresholds
+
+By default, exit1.dev sends domain expiration alerts at the following intervals before the expiration date:
+
+| Days Before Expiry | Alert Level |
+|---|---|
+| 30 days | Early warning |
+| 14 days | Warning |
+| 7 days | Urgent |
+| 1 day | Critical |
+
+## Customizing Thresholds
+
+You can customize alert thresholds per domain:
+
+1. Navigate to the check with Domain Intelligence enabled
+2. Open Domain Intelligence settings
+3. Modify the alert thresholds
+4. Save the changes
+
+### Custom Threshold Examples
+
+| Use Case | Recommended Thresholds |
+|---|---|
+| Critical production domain | 60, 30, 14, 7, 3, 1 days |
+| Standard domain | 30, 14, 7, 1 days (default) |
+| Low-priority domain | 14, 7, 1 days |
+
+## Alert Events
+
+Domain Intelligence generates the following alert events:
+
+| Event | Description |
+|---|---|
+| `domain_expiring` | Domain is approaching its expiration date (sent at each threshold) |
+| `domain_expired` | Domain has passed its expiration date |
+| `domain_renewed` | Domain expiration date has been extended (renewal detected) |
+
+## Renewal Detection
+
+When exit1.dev detects that a domain's expiration date has been extended (indicating a renewal), it:
+
+1. Sends a `domain_renewed` alert
+2. Clears any active expiration warnings
+3. Resets the alert threshold cycle based on the new expiration date
+
+## Alert Channels
+
+Domain Intelligence alerts are sent through your configured alert channels:
+
+- **Email** - Domain expiration warnings in your inbox
+- **SMS** - Urgent expiration alerts via text (Nano plan)
+- **Webhooks** - Domain events in your webhook payload
+- **Slack** - Notifications in your connected Slack channel
+- **Discord** - Notifications in your connected Discord channel
+
+Configure alert channels in the [Alerting](/alerting) section.

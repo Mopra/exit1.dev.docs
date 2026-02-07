@@ -1,0 +1,65 @@
+# Frequently Asked Questions
+
+## General
+
+### What happens if I exceed my monitor limit?
+You cannot create new monitors beyond your plan limit (50 on Free). Existing checks continue to run. Upgrade to the Nano plan for unlimited monitors.
+
+### Can I change my plan at any time?
+Yes. Upgrades take effect immediately. Downgrades take effect at the end of your current billing period.
+
+### Is there a free trial of the Nano plan?
+The Free plan serves as a trial. You can use it indefinitely and upgrade when you need more capacity.
+
+## Monitoring
+
+### How accurate are the uptime calculations?
+Uptime is calculated based on every check execution. With 1-minute intervals on the Nano plan, you get 1,440 data points per day for highly accurate uptime tracking.
+
+### What happens during a network outage at the monitoring region?
+If a monitoring region experiences issues, checks may be delayed. exit1.dev runs from Google Cloud infrastructure for high availability.
+
+### Can I monitor internal/private endpoints?
+exit1.dev monitors endpoints that are publicly accessible from the internet. Internal endpoints behind firewalls are not supported.
+
+## Alerting
+
+### Why am I not receiving email alerts?
+Check the following:
+1. Verify your email address is in the alert recipients list
+2. Check your spam/junk folder
+3. Confirm you haven't exceeded your email alert quota
+4. Ensure the check has alerting enabled
+
+### Can I receive alerts for specific checks only?
+Yes. Configure per-check alert overrides to control which checks trigger alerts and to which recipients.
+
+### How do I avoid alert fatigue?
+- Increase the consecutive failure threshold
+- Use the `minConsecutiveEvents` flap suppression setting
+- Route non-critical alerts to a dedicated channel
+
+## Billing
+
+### What payment methods are accepted?
+We accept all major credit and debit cards through our payment processor.
+
+### Can I get a refund?
+Contact support within 14 days of a charge for a refund evaluation.
+
+### Is there annual billing?
+Yes. exit1.dev offers both monthly and annual billing. Save 25% with annual billing.
+
+### What happens if my payment fails?
+Your account continues on the Nano plan for a grace period. If payment is not resolved, your account is downgraded to the Free plan.
+
+## API
+
+### How do I get an API key?
+Navigate to **Settings** > **API** and click **Create API Key**. API access is available on all plans.
+
+### Can I create or modify checks via the API?
+The current API is read-only. You can retrieve check data, history, and statistics. Check management via API is planned for a future release.
+
+### What are the API rate limits?
+See the [Rate Limits](/api-reference/rate-limits) documentation for detailed rate limit information.

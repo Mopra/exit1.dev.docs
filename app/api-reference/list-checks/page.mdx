@@ -1,0 +1,114 @@
+# List Checks
+
+Retrieve a list of all monitoring checks in your account.
+
+## Endpoint
+
+```
+GET /v1/public/checks
+```
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `limit` | integer | 25 | Number of results per page (1-100) |
+| `page` | integer | 1 | Page number for offset pagination |
+| `cursor` | string | - | Cursor for cursor-based pagination |
+| `status` | string | - | Filter by status: `up`, `down`, `paused` |
+| `includeTotal` | boolean | false | Include total count in response |
+
+## Pagination
+
+The API supports two pagination methods:
+
+### Offset Pagination
+
+Use `page` and `limit` parameters:
+
+```bash
+curl -H "X-Api-Key: ek_live_..." \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?page=2&limit=10"
+```
+
+### Cursor Pagination
+
+Use the `cursor` value from the previous response for more efficient pagination:
+
+```bash
+curl -H "X-Api-Key: ek_live_..." \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?cursor=abc123&limit=10"
+```
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "abc123",
+      "name": "Production Website",
+      "url": "https://example.com",
+      "type": "website",
+      "method": "GET",
+      "status": "up",
+      "interval": 120,
+      "region": "us-central",
+      "expectedStatus": 200,
+      "lastChecked": "2025-01-15T14:30:00Z",
+      "lastResponseTime": 245,
+      "uptime": 99.95,
+      "ssl": {
+        "valid": true,
+        "issuer": "Let's Encrypt",
+        "expiresAt": "2025-04-15T00:00:00Z"
+      },
+      "createdAt": "2024-06-01T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 25,
+    "total": 12,
+    "cursor": "next_cursor_value"
+  }
+}
+```
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?limit=10&status=up"
+```
+
+### JavaScript
+
+```javascript
+const response = await fetch(
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?limit=10",
+  {
+    headers: {
+      "X-Api-Key": "ek_live_your_key_here",
+    },
+  }
+);
+const data = await response.json();
+console.log(data);
+```
+
+### Python
+
+```python
+import requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks",
+    headers={"X-Api-Key": "ek_live_your_key_here"},
+    params={"limit": 10}
+)
+data = response.json()
+print(data)
+```

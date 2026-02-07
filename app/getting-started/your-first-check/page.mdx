@@ -1,0 +1,61 @@
+# Your First Check
+
+This guide walks you through creating your first monitoring check in exit1.dev.
+
+## Step 1: Navigate to Checks
+
+From the dashboard, click **Checks** in the sidebar navigation to access the checks management page.
+
+## Step 2: Create a New Check
+
+Click the **Add Check** button to open the check creation form.
+
+## Step 3: Configure Your Check
+
+### Basic Settings
+
+- **Name** - A descriptive name for your check (e.g., "Production Website")
+- **URL** - The full URL to monitor (e.g., `https://example.com`)
+- **Check Type** - Select from:
+  - **Website** - HTTP/HTTPS monitoring
+  - **API** - REST endpoint monitoring with custom methods and headers
+  - **TCP/UDP** - Socket-level monitoring
+
+### HTTP Settings (Website & API)
+
+- **Method** - HTTP method to use (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- **Expected Status Code** - The status code that indicates success (default: 200)
+- **Headers** - Custom request headers
+- **Body** - Request body (for POST, PUT, PATCH methods)
+- **Cache Control** - Disable caching by setting `Cache-Control: no-cache`
+
+### Monitoring Settings
+
+- **Check Interval** - How often to run the check
+  - Free plan: every 5 minutes
+  - Nano plan: every 1 minute
+- **Check Region** - Where to run the check from:
+  - US Central
+  - Europe West
+  - Asia Southeast
+  - Auto (system selects)
+- **Consecutive Failures** - Number of consecutive failures before alerting (1-99)
+
+## Step 4: Save and Monitor
+
+Click **Save** to create your check. The first check will run immediately, and you'll see results appear on the dashboard.
+
+## Understanding Results
+
+After your check runs, you'll see:
+
+- **Status indicator** - Green (up), red (down), or yellow (degraded)
+- **Response time** - How long the request took
+- **Last checked** - When the check last ran
+- **Uptime percentage** - Calculated availability over time
+
+## Next Steps
+
+- [Understand the dashboard](/getting-started/understanding-the-dashboard) to navigate your monitoring data
+- [Configure alerting](/alerting) to get notified when checks fail
+- [Set up a status page](/status-pages) to share availability with your users

@@ -1,0 +1,129 @@
+# Check History
+
+Retrieve the execution history for a specific check.
+
+## Endpoint
+
+```
+GET /v1/public/checks/{id}/history
+```
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | string | The unique check identifier |
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `limit` | integer | 25 | Number of results per page (1-100) |
+| `page` | integer | 1 | Page number for offset pagination |
+| `cursor` | string | - | Cursor for cursor-based pagination |
+| `from` | string (ISO 8601) | - | Start date filter |
+| `to` | string (ISO 8601) | - | End date filter |
+| `status` | string | - | Filter by status: `up`, `down`, `error` |
+| `q` | string | - | Search query (searches error messages and response content) |
+| `includeTotal` | boolean | false | Include total count in response |
+
+## Response
+
+```json
+{
+  "data": [
+    {
+      "id": "hist_001",
+      "checkId": "abc123",
+      "status": "up",
+      "statusCode": 200,
+      "responseTime": 245,
+      "region": "us-central",
+      "timing": {
+        "dns": 12,
+        "connect": 25,
+        "tls": 45,
+        "ttfb": 150,
+        "total": 245
+      },
+      "error": null,
+      "createdAt": "2025-01-15T14:30:00Z"
+    },
+    {
+      "id": "hist_002",
+      "checkId": "abc123",
+      "status": "down",
+      "statusCode": 503,
+      "responseTime": null,
+      "region": "us-central",
+      "timing": null,
+      "error": "Service Unavailable",
+      "createdAt": "2025-01-15T14:25:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 25,
+    "total": 1440,
+    "cursor": "next_cursor_value"
+  }
+}
+```
+
+## Date Filtering
+
+Filter history by date range using ISO 8601 format:
+
+```bash
+curl -H "X-Api-Key: ek_live_..." \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?from=2025-01-01T00:00:00Z&to=2025-01-31T23:59:59Z"
+```
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?limit=50&status=down"
+```
+
+### JavaScript
+
+```javascript
+const params = new URLSearchParams({
+  limit: "50",
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-01-31T23:59:59Z",
+});
+
+const response = await fetch(
+  `https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?${params}`,
+  {
+    headers: {
+      "X-Api-Key": "ek_live_your_key_here",
+    },
+  }
+);
+const history = await response.json();
+console.log(history.data);
+```
+
+### Python
+
+```python
+import requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history",
+    headers={"X-Api-Key": "ek_live_your_key_here"},
+    params={
+        "limit": 50,
+        "from": "2025-01-01T00:00:00Z",
+        "to": "2025-01-31T23:59:59Z",
+        "status": "down"
+    }
+)
+history = response.json()
+print(history["data"])
+```

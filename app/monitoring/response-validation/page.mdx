@@ -1,0 +1,62 @@
+# Response Validation
+
+Response validation lets you verify the content of HTTP responses, not just the status code.
+
+## Validation Types
+
+### JSONPath Expressions
+
+Extract values from JSON responses using JSONPath expressions and compare them against expected values.
+
+**Example:** Verify that a health endpoint returns `"ok"`:
+
+- **JSONPath:** `$.status`
+- **Expected value:** `ok`
+
+For an API response like:
+```json
+{
+  "status": "ok",
+  "version": "2.1.0"
+}
+```
+
+The JSONPath `$.status` extracts `"ok"`, which matches the expected value.
+
+### Common JSONPath Expressions
+
+| Expression | Description |
+|---|---|
+| `$.status` | Root-level "status" field |
+| `$.data.count` | Nested field access |
+| `$.items[0].name` | First item's name in an array |
+| `$.items.length` | Number of items in an array |
+
+### Text Containment
+
+Verify that the response body contains a specific text string. This is useful for:
+
+- HTML pages that should contain specific content
+- API responses where you want to verify a keyword exists
+- Simple health checks that return plain text
+
+## How Validation Works
+
+1. The check runs normally and receives a response
+2. If the status code matches the expected code, response validation runs
+3. If validation fails, the check is marked as failed (same as a status code mismatch)
+4. Smart verification and consecutive failure thresholds apply to validation failures
+
+## Limitations
+
+- Response validation is only available for website and API checks (not TCP/UDP)
+- JSONPath validation requires the response to be valid JSON
+- Text containment is case-sensitive
+- The full response body is available for validation (no size limit on the validation itself)
+
+## Best Practices
+
+- Use JSONPath validation for structured API responses
+- Use text containment for HTML pages or simple text responses
+- Keep validation expressions simple and focused on critical values
+- Test your JSONPath expressions against sample responses before configuring checks

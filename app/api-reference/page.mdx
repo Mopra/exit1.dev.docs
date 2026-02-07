@@ -1,0 +1,47 @@
+# API Reference
+
+The exit1.dev API provides programmatic access to your monitoring data.
+
+> **Note:** API access is available on all plans.
+
+## Base URL
+
+All API requests are made to:
+
+```
+https://us-central1-exit1-dev.cloudfunctions.net/publicApi
+```
+
+## Conventions
+
+- **REST architecture** - Resources are accessed via standard HTTP methods
+- **JSON responses** - All responses are returned in JSON format
+- **GET-only** - The current API version only supports read operations
+- **API versioning** - All endpoints are prefixed with `/v1/`
+
+## Available Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /v1/public/checks` | [List all checks](/api-reference/list-checks) |
+| `GET /v1/public/checks/{id}` | [Get a single check](/api-reference/get-check) |
+| `GET /v1/public/checks/{id}/history` | [Get check history](/api-reference/check-history) |
+| `GET /v1/public/checks/{id}/stats` | [Get uptime statistics](/api-reference/check-stats) |
+
+## Quick Start
+
+1. [Create an API key](/api-reference/authentication)
+2. Include the key in the `X-Api-Key` header
+3. Make your first request:
+
+```bash
+curl -H "X-Api-Key: ek_live_your_api_key_here" \
+  https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks
+```
+
+## Related
+
+- [Authentication](/api-reference/authentication) - API key setup
+- [Rate Limits](/api-reference/rate-limits) - Request quotas
+- [Errors](/api-reference/errors) - Error response format
+- [Interactive API Docs](/api-reference/openapi) - Try the API in your browser

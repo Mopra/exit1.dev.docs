@@ -1,0 +1,38 @@
+# Check Regions
+
+exit1.dev runs monitoring checks from multiple geographic regions to provide global coverage.
+
+## Available Regions
+
+| Region | Location | Identifier |
+|---|---|---|
+| US Central | United States (Central) | `us-central` |
+| Europe West | Western Europe | `eu-west` |
+| Asia Southeast | Southeast Asia | `asia-southeast` |
+
+## Region Selection
+
+### Auto Assignment
+When set to **Auto**, exit1.dev selects the region automatically. This is the default setting and is recommended for most use cases.
+
+### Manual Override
+You can manually select a specific region for each check. This is useful when:
+
+- You want to monitor from a region close to your users
+- You're testing region-specific content delivery
+- You need consistent results from a single location
+
+## Multi-Region Monitoring
+
+Each check runs from one region at a time. The region determines:
+
+- **Network path** - The route between the monitoring server and your endpoint
+- **Latency baseline** - Expected response times vary by geographic distance
+- **DNS resolution** - DNS may return different results based on region (GeoDNS)
+
+## Best Practices
+
+- Use **Auto** for general monitoring
+- Select a specific region when testing regional performance
+- Consider creating separate checks for different regions if global coverage is critical
+- Account for geographic distance when setting response time expectations

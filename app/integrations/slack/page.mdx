@@ -1,0 +1,65 @@
+# Slack Integration
+
+Receive exit1.dev monitoring alerts directly in your Slack workspace.
+
+## Setup
+
+### Step 1: Create a Slack Incoming Webhook
+
+1. Go to [Slack API: Incoming Webhooks](https://api.slack.com/messaging/webhooks)
+2. Create a new Slack app (or select an existing one)
+3. Enable **Incoming Webhooks** for the app
+4. Click **Add New Webhook to Workspace**
+5. Select the channel you want alerts posted to
+6. Copy the generated webhook URL
+
+### Step 2: Add the Webhook to exit1.dev
+
+1. Navigate to **Settings** > **Integrations** > **Slack**
+2. Paste your Slack webhook URL
+3. Click **Save**
+
+### Step 3: Test
+
+Click **Send Test Notification** to verify the connection is working. A test message will appear in your configured Slack channel.
+
+## Notification Format
+
+Slack notifications include:
+
+- **Check name** and status (with color-coded indicator)
+- **URL** of the monitored endpoint
+- **Status details** - Response code, response time, or error message
+- **Timestamp** of the event
+- **Region** where the check ran
+- **Direct link** to the check in exit1.dev
+
+### Down Notification Example
+
+> **Production Website** is **DOWN**
+> URL: https://example.com
+> Status: 503 Service Unavailable
+> Region: US Central
+> Time: Jan 15, 2025 2:30 PM UTC
+
+### Recovery Notification Example
+
+> **Production Website** is **UP**
+> URL: https://example.com
+> Response: 200 OK (245ms)
+> Region: US Central
+> Time: Jan 15, 2025 2:35 PM UTC
+
+## Managing the Integration
+
+### Changing Channel
+Create a new incoming webhook in Slack for the desired channel, then update the webhook URL in **Settings** > **Integrations** > **Slack**.
+
+### Removing
+Navigate to **Settings** > **Integrations** > **Slack** and click **Remove** to delete the webhook and stop Slack notifications.
+
+## Troubleshooting
+
+- **Notifications not appearing** - Verify the webhook URL is correct and the Slack app still has access to the channel
+- **Invalid webhook URL** - Ensure the URL starts with `https://hooks.slack.com/`
+- **Delayed notifications** - Check the exit1.dev status page for any service issues

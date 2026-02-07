@@ -1,0 +1,53 @@
+# Website Checks
+
+Website checks monitor HTTP/HTTPS endpoints by making requests and validating the responses.
+
+## Configuration
+
+### URL
+Enter the full URL including the protocol (e.g., `https://example.com`). Both HTTP and HTTPS are supported.
+
+### Expected Status Code
+Set the HTTP status code that indicates a successful response. The default is `200`. Common values:
+
+| Code | Meaning |
+|---|---|
+| 200 | OK |
+| 201 | Created |
+| 204 | No Content |
+| 301 | Moved Permanently |
+| 302 | Found (Redirect) |
+| 404 | Not Found (useful for monitoring removed pages) |
+
+### Cache Control
+Enable the **No Cache** option to send a `Cache-Control: no-cache` header with each request. This ensures you're testing the origin server rather than a cached response.
+
+### Redirect Handling
+By default, exit1.dev follows HTTP redirects (301, 302, 307, 308). The final response status code is compared against your expected status code.
+
+If you want to verify that a URL returns a specific redirect code, set the expected status code to the redirect code (e.g., 301) and the system will check the initial response without following the redirect.
+
+## How It Works
+
+1. exit1.dev sends an HTTP request to your URL from the configured region
+2. The response status code is compared to the expected status code
+3. If response validation is configured, the response body is checked
+4. If the check fails, a smart verification re-check runs after 30 seconds
+5. If the re-check also fails, the check is marked as down and alerts are sent (based on your consecutive failure threshold)
+
+## Performance Metrics
+
+Each website check captures detailed timing information:
+
+- **DNS Lookup** - Time to resolve the domain name
+- **TCP Connect** - Time to establish the TCP connection
+- **TLS Handshake** - Time to complete the SSL/TLS handshake (HTTPS only)
+- **Time to First Byte (TTFB)** - Time until the first byte of the response is received
+- **Total Response Time** - End-to-end request duration
+
+## Best Practices
+
+- Use HTTPS URLs whenever possible for accurate SSL monitoring
+- Set an appropriate expected status code for each endpoint
+- Enable cache control for dynamic content
+- Use [response validation](/monitoring/response-validation) for critical endpoints to verify response content

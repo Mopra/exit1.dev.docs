@@ -1,0 +1,64 @@
+# Logs
+
+The logs section provides a detailed history of every check execution.
+
+## BigQuery-Powered Storage
+
+Check history is stored in **Google BigQuery**, providing:
+
+- Fast querying across large datasets
+- Reliable, scalable storage
+- Efficient time-range filtering
+
+## Viewing Logs
+
+Navigate to a check's detail page and select the **History** tab to view its logs.
+
+### Filtering
+
+| Filter | Description |
+|---|---|
+| **Date range** | Select a start and end date |
+| **Status** | Filter by up, down, or error |
+| **Search** | Search by response content or error message |
+
+### Log Entry Details
+
+Each log entry includes:
+
+- **Timestamp** - When the check ran
+- **Status** - Result (up, down, error)
+- **Status code** - HTTP response code (for HTTP checks)
+- **Response time** - Total request duration in milliseconds
+- **Region** - Where the check ran from
+- **Performance breakdown** - DNS, connect, TLS, TTFB timing
+
+## Log Notes and Annotations
+
+Add notes to log entries for context and documentation:
+
+### Adding Notes
+1. Click on a log entry to expand it
+2. Click **Add Note**
+3. Enter your note text
+4. Save
+
+Notes are useful for:
+
+- Documenting the cause of an outage
+- Recording maintenance activities
+- Linking to related incident reports
+- Providing context for future reference
+
+### Manual Log Entries
+
+Create manual log entries to record events that aren't captured automatically:
+
+- Planned maintenance windows
+- Manual failovers
+- External incidents affecting your services
+- Communication with upstream providers
+
+## Export
+
+Log data can be accessed via the [API](/api-reference/check-history) for integration with external analytics tools.

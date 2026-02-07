@@ -1,0 +1,811 @@
+openapi: 3.1.0
+info:
+  title: exit1.dev API
+  description: |
+    The exit1.dev API provides programmatic access to your website monitoring data.
+
+    ## Authentication
+    All requests must include an `X-Api-Key` header with a valid API key.
+    API access requires a Nano plan subscription.
+
+    ## Rate Limits
+    - Pre-authentication: 20 requests/minute per IP
+    - Per API key: 5 requests/minute
+    - Per endpoint per key: 1 request/minute
+    - Daily per key: 500 requests
+    - Daily per user: 2,000 requests
+  version: "1.0.0"
+  contact:
+    name: exit1.dev Support
+    url: https://exit1.dev
+    email: support@exit1.dev
+
+servers:
+  - url: https://us-central1-exit1-dev.cloudfunctions.net/publicApi
+    description: Production API
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /v1/public/checks:
+    get:
+      operationId: listChecks
+      summary: List checks
+      description: Retrieve a list of all monitoring checks in your account.
+      tags:
+        - Checks
+      parameters:
+        - name: limit
+          in: query
+          description: Number of results per page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: page
+          in: query
+          description: Page number for offset pagination
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: cursor
+          in: query
+          description: Cursor for cursor-based pagination
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by check status
+          schema:
+            type: string
+            enum:
+              - up
+              - down
+              - paused
+        - name: includeTotal
+          in: query
+          description: Include total count in response metadata
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: List of checks
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests allowed in the current window
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Requests remaining in the current window
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when the rate limit window resets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Check"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/public/checks/{id}:
+    get:
+      operationId: getCheck
+      summary: Get check
+      description: Retrieve details for a single monitoring check.
+      tags:
+        - Checks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique check identifier
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Check details
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests allowed in the current window
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Requests remaining in the current window
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when the rate limit window resets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Check"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/public/checks/{id}/history:
+    get:
+      operationId: getCheckHistory
+      summary: Check history
+      description: Retrieve the execution history for a specific check.
+      tags:
+        - History
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique check identifier
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of results per page (1-100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: page
+          in: query
+          description: Page number for offset pagination
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: cursor
+          in: query
+          description: Cursor for cursor-based pagination
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: Start date filter (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: End date filter (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          description: Filter by result status
+          schema:
+            type: string
+            enum:
+              - up
+              - down
+              - error
+        - name: q
+          in: query
+          description: Search query (searches error messages and response content)
+          schema:
+            type: string
+        - name: includeTotal
+          in: query
+          description: Include total count in response metadata
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Check history entries
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests allowed in the current window
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Requests remaining in the current window
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when the rate limit window resets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/HistoryEntry"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/public/checks/{id}/stats:
+    get:
+      operationId: getCheckStats
+      summary: Check stats
+      description: Retrieve uptime statistics for a specific check.
+      tags:
+        - Statistics
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique check identifier
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: Start date for statistics (ISO 8601). Defaults to 24 hours ago.
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          description: End date for statistics (ISO 8601). Defaults to now.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Uptime statistics
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests allowed in the current window
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Requests remaining in the current window
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when the rate limit window resets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Stats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: |
+        API key for authentication. Create keys at Settings > API.
+        Format: `ek_live_<64 hex characters>`
+        Maximum 2 keys per account.
+
+  schemas:
+    Check:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique check identifier
+          example: "abc123"
+        name:
+          type: string
+          description: Check display name
+          example: "Production Website"
+        url:
+          type: string
+          format: uri
+          description: Monitored URL or host
+          example: "https://example.com"
+        type:
+          type: string
+          enum:
+            - website
+            - api
+            - tcp
+            - udp
+          description: Check type
+          example: "website"
+        method:
+          type: string
+          enum:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - HEAD
+            - OPTIONS
+          description: HTTP method (for website/api checks)
+          example: "GET"
+        status:
+          type: string
+          enum:
+            - up
+            - down
+            - paused
+          description: Current check status
+          example: "up"
+        interval:
+          type: integer
+          description: Check interval in seconds
+          example: 120
+        region:
+          type: string
+          enum:
+            - us-central
+            - eu-west
+            - asia-southeast
+            - auto
+          description: Monitoring region
+          example: "us-central"
+        expectedStatus:
+          type: integer
+          description: Expected HTTP status code
+          example: 200
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom request headers
+        body:
+          type: string
+          nullable: true
+          description: Request body (for POST/PUT/PATCH)
+        responseValidation:
+          type: object
+          nullable: true
+          properties:
+            type:
+              type: string
+              enum:
+                - jsonpath
+                - contains
+            expression:
+              type: string
+            expectedValue:
+              type: string
+          description: Response validation configuration
+        consecutiveFailures:
+          type: integer
+          description: Current consecutive failure count
+          example: 0
+        consecutiveFailureThreshold:
+          type: integer
+          description: Failures required before alerting
+          example: 1
+        lastChecked:
+          type: string
+          format: date-time
+          description: Timestamp of last check execution
+          example: "2025-01-15T14:30:00Z"
+        lastResponseTime:
+          type: integer
+          nullable: true
+          description: Last response time in milliseconds
+          example: 245
+        lastStatusCode:
+          type: integer
+          nullable: true
+          description: Last HTTP status code
+          example: 200
+        uptime:
+          type: number
+          format: float
+          description: Uptime percentage
+          example: 99.95
+        ssl:
+          type: object
+          nullable: true
+          properties:
+            valid:
+              type: boolean
+              description: Whether the SSL certificate is valid
+            issuer:
+              type: string
+              description: Certificate Authority
+              example: "Let's Encrypt"
+            subject:
+              type: string
+              description: Certificate subject domain
+              example: "example.com"
+            validFrom:
+              type: string
+              format: date-time
+              description: Certificate start date
+            validTo:
+              type: string
+              format: date-time
+              description: Certificate expiration date
+            serialNumber:
+              type: string
+              description: Certificate serial number
+            fingerprint:
+              type: string
+              description: Certificate fingerprint
+          description: SSL certificate information
+        domain:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              description: Domain name
+              example: "example.com"
+            registrar:
+              type: string
+              description: Domain registrar
+              example: "Namecheap"
+            expiresAt:
+              type: string
+              format: date-time
+              description: Domain expiration date
+            updatedAt:
+              type: string
+              format: date-time
+              description: Last registration update
+          description: Domain intelligence information
+        createdAt:
+          type: string
+          format: date-time
+          description: Check creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last check update timestamp
+
+    HistoryEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          description: History entry identifier
+          example: "hist_001"
+        checkId:
+          type: string
+          description: Associated check ID
+          example: "abc123"
+        status:
+          type: string
+          enum:
+            - up
+            - down
+            - error
+          description: Check result status
+          example: "up"
+        statusCode:
+          type: integer
+          nullable: true
+          description: HTTP response status code
+          example: 200
+        responseTime:
+          type: integer
+          nullable: true
+          description: Response time in milliseconds
+          example: 245
+        region:
+          type: string
+          description: Region where the check ran
+          example: "us-central"
+        timing:
+          type: object
+          nullable: true
+          properties:
+            dns:
+              type: integer
+              description: DNS lookup time in ms
+              example: 12
+            connect:
+              type: integer
+              description: TCP connect time in ms
+              example: 25
+            tls:
+              type: integer
+              description: TLS handshake time in ms
+              example: 45
+            ttfb:
+              type: integer
+              description: Time to first byte in ms
+              example: 150
+            total:
+              type: integer
+              description: Total response time in ms
+              example: 245
+          description: Detailed timing breakdown
+        error:
+          type: string
+          nullable: true
+          description: Error message (if check failed)
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of the check execution
+          example: "2025-01-15T14:30:00Z"
+
+    Stats:
+      type: object
+      properties:
+        checkId:
+          type: string
+          description: Associated check ID
+          example: "abc123"
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+          description: Statistics time period
+        uptime:
+          type: object
+          properties:
+            percentage:
+              type: number
+              format: float
+              description: Uptime percentage
+              example: 99.95
+            totalChecks:
+              type: integer
+              description: Total check executions
+              example: 720
+            successfulChecks:
+              type: integer
+              description: Successful check count
+              example: 719
+            failedChecks:
+              type: integer
+              description: Failed check count
+              example: 1
+        responseTime:
+          type: object
+          properties:
+            average:
+              type: integer
+              description: Mean response time in ms
+              example: 245
+            min:
+              type: integer
+              description: Minimum response time in ms
+              example: 120
+            max:
+              type: integer
+              description: Maximum response time in ms
+              example: 890
+            p50:
+              type: integer
+              description: 50th percentile in ms
+              example: 230
+            p90:
+              type: integer
+              description: 90th percentile in ms
+              example: 410
+            p95:
+              type: integer
+              description: 95th percentile in ms
+              example: 550
+            p99:
+              type: integer
+              description: 99th percentile in ms
+              example: 820
+        timing:
+          type: object
+          properties:
+            dns:
+              type: object
+              properties:
+                average:
+                  type: integer
+                  example: 12
+                p95:
+                  type: integer
+                  example: 25
+            connect:
+              type: object
+              properties:
+                average:
+                  type: integer
+                  example: 25
+                p95:
+                  type: integer
+                  example: 45
+            tls:
+              type: object
+              properties:
+                average:
+                  type: integer
+                  example: 45
+                p95:
+                  type: integer
+                  example: 80
+            ttfb:
+              type: object
+              properties:
+                average:
+                  type: integer
+                  example: 150
+                p95:
+                  type: integer
+                  example: 350
+          description: Timing breakdown statistics
+        incidents:
+          type: object
+          properties:
+            count:
+              type: integer
+              description: Number of incidents
+              example: 1
+            totalDowntime:
+              type: integer
+              description: Total downtime in seconds
+              example: 300
+            mtbf:
+              type: integer
+              description: Mean time between failures in seconds
+              example: 86100
+            mttr:
+              type: integer
+              description: Mean time to recovery in seconds
+              example: 300
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        limit:
+          type: integer
+          description: Results per page
+          example: 25
+        total:
+          type: integer
+          nullable: true
+          description: Total results (only if includeTotal=true)
+          example: 12
+        cursor:
+          type: string
+          nullable: true
+          description: Cursor for next page
+          example: "next_cursor_value"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: integer
+              description: HTTP status code
+            message:
+              type: string
+              description: Human-readable error message
+            retryAfter:
+              type: integer
+              description: Seconds to wait before retrying (for 429 responses)
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 401
+              message: "Invalid or missing API key"
+
+    Forbidden:
+      description: API access not available on your plan
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 403
+              message: "API access requires a Nano plan subscription"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 404
+              message: "Check not found"
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 429
+              message: "Rate limit exceeded. Please retry after the reset time."
+              retryAfter: 60
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: 500
+              message: "An unexpected error occurred"

@@ -1,0 +1,57 @@
+# API Checks
+
+API checks extend website checks with full support for REST endpoint monitoring, including custom HTTP methods, headers, and request bodies.
+
+## HTTP Methods
+
+API checks support all standard HTTP methods:
+
+| Method | Use Case |
+|---|---|
+| GET | Retrieve data, health endpoints |
+| POST | Test endpoint availability with payload |
+| PUT | Verify update endpoints |
+| PATCH | Verify partial update endpoints |
+| DELETE | Test deletion endpoints (use with caution) |
+| HEAD | Check endpoint availability without body |
+| OPTIONS | Verify CORS configuration |
+
+## Custom Headers
+
+Add custom headers to your API check requests. Common use cases:
+
+- **Authorization** - `Authorization: Bearer <token>` for authenticated endpoints
+- **Content-Type** - `Content-Type: application/json` for JSON payloads
+- **Accept** - `Accept: application/json` to request specific response formats
+- **Custom headers** - Any application-specific headers your API requires
+
+> **Note:** Avoid including sensitive credentials in check headers. Consider using a dedicated monitoring API key with read-only access.
+
+## Request Body
+
+For POST, PUT, and PATCH methods, you can specify a request body. The body is sent as-is, so ensure your `Content-Type` header matches the body format.
+
+### JSON Example
+
+Set `Content-Type: application/json` and provide a JSON body:
+
+```json
+{
+  "ping": true
+}
+```
+
+## Response Validation
+
+Combine API checks with [response validation](/monitoring/response-validation) to verify that your API returns the expected data:
+
+- **JSONPath expressions** - Extract specific values from JSON responses
+- **Expected values** - Compare extracted values against expected results
+- **Text containment** - Verify that the response contains specific text
+
+## Best Practices
+
+- Use dedicated health check endpoints (e.g., `/health` or `/api/status`)
+- Set up a monitoring-specific API key with minimal permissions
+- Use response validation to verify response content, not just status codes
+- Monitor both the API itself and downstream dependencies

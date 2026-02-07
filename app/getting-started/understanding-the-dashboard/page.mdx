@@ -1,0 +1,71 @@
+# Understanding the Dashboard
+
+The exit1.dev dashboard provides multiple views to help you monitor and manage your checks.
+
+## Dashboard Views
+
+### Table View
+
+The default view displays all your checks in a sortable table with columns for:
+
+- **Name** - The check name with status indicator
+- **URL/Host** - The monitored endpoint
+- **Status** - Current status (up, down, error)
+- **Response Time** - Latest response time in milliseconds
+- **Uptime** - Percentage uptime over the selected period
+- **Last Checked** - Timestamp of the most recent check
+
+### Folder View
+
+Organize your checks into folders for logical grouping. Folders help you:
+
+- Group checks by project, environment, or team
+- Apply bulk operations to all checks in a folder
+- Include entire folders in status pages
+
+### Map View
+
+The map view shows the geographic distribution of your check regions, giving you a visual overview of where your monitoring is running from.
+
+### Timeline View
+
+The timeline view displays check events chronologically, showing:
+
+- Status changes (up/down transitions)
+- Response time trends
+- Alert events
+
+## Status Indicators
+
+| Color | Status | Description |
+|---|---|---|
+| Green | Up | Check is passing successfully |
+| Red | Down | Check is failing |
+| Yellow | Degraded | Check is experiencing issues but not fully down |
+| Gray | Paused | Check is not currently running |
+
+## Response Time Charts
+
+Each check includes a response time chart that shows performance over time. The chart displays:
+
+- **Response time trend line**
+- **Performance breakdown** (DNS lookup, TCP connect, TLS handshake, Time to First Byte)
+- **Configurable time range** (1 hour to 30 days)
+
+## Filtering and Search
+
+Use the dashboard filters to narrow down your checks:
+
+- **Status filter** - Show only up, down, or paused checks
+- **Search** - Find checks by name or URL
+- **Folder filter** - Show checks in a specific folder
+
+## Quick Actions
+
+From the dashboard, you can quickly:
+
+- **Pause/Resume** a check
+- **Edit** check settings
+- **Delete** a check
+- **View history** and detailed logs
+- **Trigger** an immediate check run

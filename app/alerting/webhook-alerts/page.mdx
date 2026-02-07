@@ -1,0 +1,83 @@
+# Webhook Alerts
+
+Webhook alerts send HTTP POST requests to your endpoints when check status changes occur.
+
+## Configuration
+
+### Adding Webhooks
+
+You can configure up to **5 webhook endpoints** per account.
+
+1. Navigate to **Settings** > **Alerting** > **Webhooks**
+2. Enter the webhook URL
+3. Optionally add custom headers (e.g., authorization tokens)
+4. Save the webhook
+
+### Custom Headers
+
+Add custom headers to authenticate webhook requests:
+
+```
+Authorization: Bearer your-secret-token
+X-Custom-Header: your-value
+```
+
+## Payload Format
+
+Webhook requests are sent as `POST` with a JSON body:
+
+```json
+{
+  "event": "website_down",
+  "check": {
+    "id": "abc123",
+    "name": "Production Website",
+    "url": "https://example.com",
+    "type": "website"
+  },
+  "status": {
+    "current": "down",
+    "previous": "up",
+    "statusCode": 503,
+    "responseTime": null
+  },
+  "region": "us-central",
+  "timestamp": "2025-01-15T14:30:00Z"
+}
+```
+
+## Retry Logic
+
+If a webhook delivery fails, exit1.dev retries with **exponential backoff**:
+
+| Attempt | Delay |
+|---|---|
+| 1 | Immediate |
+| 2 | 1 minute |
+| 3 | 2 minutes |
+| 4 | 4 minutes |
+| 5 | 8 minutes |
+| 6 | 16 minutes |
+| 7 | 32 minutes |
+| 8 | 64 minutes |
+
+After 8 failed attempts, the webhook delivery is abandoned for that event.
+
+## Health Tracking
+
+exit1.dev monitors the health of your webhook endpoints:
+
+- **Healthy** - Webhooks are being delivered successfully
+- **Degraded** - Some deliveries are failing but retries succeed
+- **Unhealthy** - Multiple consecutive deliveries have failed
+
+Unhealthy webhooks are flagged in the dashboard so you can investigate and fix the endpoint.
+
+## Best Practices
+
+- Use HTTPS endpoints for webhook URLs
+- Implement authentication via custom headers
+- Respond with a 2xx status code within 10 seconds
+- Implement idempotent webhook handlers (deliveries may be retried)
+- Monitor webhook health in the dashboard
+- Use webhooks to integrate with incident management tools (PagerDuty, Opsgenie, etc.)

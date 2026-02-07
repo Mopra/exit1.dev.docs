@@ -1,0 +1,53 @@
+# Email Alerts
+
+Email is the primary alert channel in exit1.dev, available on all plans.
+
+## Configuration
+
+### Recipients
+
+Add email addresses that should receive alerts. You can add:
+
+- Your account email (added by default)
+- Team member email addresses
+- Distribution lists or group addresses
+
+### Per-Check Overrides
+
+Override the default recipient list for individual checks. This is useful for:
+
+- Routing alerts to the team responsible for a specific service
+- Sending critical check alerts to on-call addresses
+- Reducing noise by limiting recipients for non-critical checks
+
+## Quotas
+
+| Plan | Hourly Limit | Monthly Limit |
+|---|---|---|
+| Free | 10 emails/hour | 10 emails/month |
+| Nano | — | 1,000 emails/month |
+
+When you reach a quota limit:
+
+- No more email alerts are sent until the limit resets
+- Other alert channels (webhooks, Slack, Discord) continue to work
+- A warning is displayed in the dashboard
+- Hourly limits reset every hour; monthly limits reset on the 1st
+
+## Email Content
+
+Alert emails include:
+
+- **Check name** and URL
+- **Status change** (e.g., "DOWN" or "RECOVERED")
+- **Timestamp** of the event
+- **Response time** and status code (if applicable)
+- **Error details** for failed checks
+- **Direct link** to the check in the dashboard
+
+## Best Practices
+
+- Add a team distribution list rather than individual emails
+- Use per-check overrides to route alerts to responsible teams
+- Monitor your quota usage on the dashboard
+- Combine email alerts with webhooks for critical services

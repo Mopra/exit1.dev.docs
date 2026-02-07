@@ -1,0 +1,49 @@
+# TCP/UDP Checks
+
+TCP/UDP checks monitor network services at the socket level, useful for non-HTTP services.
+
+## When to Use TCP/UDP Checks
+
+Use TCP/UDP checks for services that don't use HTTP:
+
+- **Database servers** - MySQL (3306), PostgreSQL (5432), Redis (6379)
+- **Mail servers** - SMTP (25/587), IMAP (143/993), POP3 (110/995)
+- **DNS servers** - Port 53
+- **Custom services** - Any TCP or UDP listener
+- **Game servers** - Custom port monitoring
+
+## Configuration
+
+### Host
+Enter the hostname or IP address of the service to monitor.
+
+### Port
+Specify the port number to connect to.
+
+### Protocol
+Choose between:
+- **TCP** - Connection-oriented. The check establishes a full TCP connection and considers it successful if the connection is accepted.
+- **UDP** - Connectionless. The check sends a packet and considers it successful based on the response.
+
+### Timeout
+Set the maximum time to wait for a connection. If the connection isn't established within this period, the check is marked as failed.
+
+## How It Works
+
+### TCP Checks
+1. A TCP connection (SYN, SYN-ACK, ACK) is attempted to the specified host and port
+2. If the connection is established, the check is considered successful
+3. The connection is immediately closed after verification
+4. Connection time is recorded as the response time
+
+### UDP Checks
+1. A UDP packet is sent to the specified host and port
+2. The check monitors for a response or ICMP unreachable message
+3. No response within the timeout period may indicate the port is open (UDP is connectionless)
+
+## Limitations
+
+- TCP/UDP checks only verify connectivity, not application-level health
+- UDP checks are inherently less reliable due to the connectionless nature of the protocol
+- Response validation is not available for TCP/UDP checks
+- SSL monitoring is not applicable to TCP/UDP checks

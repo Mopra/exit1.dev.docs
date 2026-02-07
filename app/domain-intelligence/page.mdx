@@ -1,0 +1,34 @@
+# Domain Intelligence
+
+Domain Intelligence tracks domain registration expiration dates using the RDAP protocol, helping you avoid accidental domain lapses.
+
+> **Note:** Domain Intelligence is available on the **Nano plan** only.
+
+## How It Works
+
+1. When you enable Domain Intelligence for a check, exit1.dev extracts the domain from the check URL
+2. The system queries RDAP (Registration Data Access Protocol) servers for domain registration data
+3. Expiration dates are tracked and monitored continuously
+4. Alerts are sent at configurable thresholds before the domain expires
+
+## Key Features
+
+- **Automatic domain extraction** - Domains are extracted from your check URLs automatically
+- **RDAP protocol** - Uses the modern, standardized RDAP protocol (replacing legacy WHOIS)
+- **Configurable alerts** - Set custom alert thresholds for each domain
+- **Renewal detection** - Detects when a domain is renewed and clears expiration warnings
+- **Per-check configuration** - Enable or disable domain tracking for individual checks
+
+## Supported TLDs
+
+Domain Intelligence supports any TLD that has RDAP service endpoints, which includes most major TLDs:
+
+- `.com`, `.net`, `.org`
+- `.io`, `.dev`, `.app`
+- Country-code TLDs with RDAP support
+- Most new gTLDs
+
+## Getting Started
+
+1. [Set up Domain Intelligence](/domain-intelligence/setup) on your checks
+2. [Configure alert thresholds](/domain-intelligence/alert-thresholds) for expiration warnings

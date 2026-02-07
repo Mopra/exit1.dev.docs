@@ -1,0 +1,91 @@
+# Errors
+
+The exit1.dev API uses standard HTTP status codes and returns structured error responses.
+
+## Status Codes
+
+| Code | Meaning | Description |
+|---|---|---|
+| 200 | OK | Request succeeded |
+| 400 | Bad Request | Invalid request parameters |
+| 401 | Unauthorized | Missing or invalid API key |
+| 403 | Forbidden | Access denied for this resource |
+| 404 | Not Found | Resource not found |
+| 405 | Method Not Allowed | HTTP method not supported (only GET is allowed) |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server-side error |
+
+## Error Response Format
+
+All error responses follow this structure:
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid parameter: limit must be between 1 and 100"
+  }
+}
+```
+
+## Common Errors
+
+### 401 Unauthorized
+
+```json
+{
+  "error": {
+    "code": 401,
+    "message": "Invalid or missing API key"
+  }
+}
+```
+
+**Causes:**
+- Missing `X-Api-Key` header
+- Invalid API key format
+- Revoked API key
+
+### 403 Forbidden
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "Access denied"
+  }
+}
+```
+
+**Causes:**
+- Invalid permissions for the requested resource
+- API key does not have access to the requested check
+
+### 404 Not Found
+
+```json
+{
+  "error": {
+    "code": 404,
+    "message": "Check not found"
+  }
+}
+```
+
+**Causes:**
+- The check ID does not exist
+- The check belongs to a different account
+
+### 429 Too Many Requests
+
+```json
+{
+  "error": {
+    "code": 429,
+    "message": "Rate limit exceeded. Please retry after the reset time.",
+    "retryAfter": 60
+  }
+}
+```
+
+**Cause:** You've exceeded a [rate limit](/api-reference/rate-limits). Wait for the specified retry period.

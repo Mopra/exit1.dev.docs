@@ -1,0 +1,46 @@
+# Check Intervals
+
+Check intervals determine how frequently exit1.dev monitors your endpoints.
+
+## Available Intervals
+
+| Plan | Interval | Checks per Hour |
+|---|---|---|
+| Free | 5 minutes | 12 |
+| Nano | 1 minute | 60 |
+
+## Smart Verification
+
+When a check fails for the first time, exit1.dev performs a **smart verification** re-check after **30 seconds**. This helps eliminate false positives caused by:
+
+- Temporary network glitches
+- Brief server restarts
+- DNS propagation delays
+- CDN cache refreshes
+
+Only if the verification check also fails will the check be marked as down.
+
+## Consecutive Failure Thresholds
+
+You can configure a **consecutive failure threshold** (1-99) for each check. The check is only marked as down after the specified number of consecutive failures.
+
+| Threshold | Behavior |
+|---|---|
+| 1 (default) | Alert after the first failure (after smart verification) |
+| 2 | Alert after 2 consecutive failures |
+| 3 | Alert after 3 consecutive failures |
+| ... | ... |
+| 99 | Alert after 99 consecutive failures |
+
+### When to Increase the Threshold
+
+- **Flaky endpoints** - Services that occasionally return errors but recover quickly
+- **Maintenance windows** - Reduce noise during planned maintenance
+- **Non-critical checks** - When you only want to be alerted for persistent outages
+
+## Timing Behavior
+
+- Checks run at fixed intervals starting from the creation time
+- The interval timer starts after the previous check completes
+- Timeout is separate from the interval (a slow response doesn't delay the next check)
+- Pausing a check stops the interval; resuming starts a new cycle immediately

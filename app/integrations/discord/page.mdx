@@ -1,0 +1,61 @@
+# Discord Integration
+
+Receive exit1.dev monitoring alerts in your Discord server.
+
+## Setup
+
+### Step 1: Create a Webhook in Discord
+
+1. Open your Discord server settings
+2. Navigate to **Integrations** > **Webhooks**
+3. Click **New Webhook**
+4. Name the webhook (e.g., "exit1.dev Alerts")
+5. Select the channel for notifications
+6. Click **Copy Webhook URL**
+
+### Step 2: Connect in exit1.dev
+
+1. Navigate to **Settings** > **Integrations** > **Discord**
+2. Paste the Discord webhook URL
+3. Click **Save**
+
+### Step 3: Test
+
+Click **Send Test Notification** to verify the connection. A test message will appear in your Discord channel.
+
+## Notification Format
+
+Discord notifications are sent as rich embeds:
+
+- **Color-coded** - Red for down, green for recovery, yellow for warnings
+- **Check name** as the embed title
+- **Status details** in embed fields
+- **Timestamp** in the embed footer
+
+### Down Notification
+
+A red-colored embed with:
+- Title: "Production Website is DOWN"
+- Fields: URL, Status Code, Error, Region
+- Timestamp
+
+### Recovery Notification
+
+A green-colored embed with:
+- Title: "Production Website is UP"
+- Fields: URL, Response Time, Status Code, Region
+- Timestamp
+
+## Managing the Integration
+
+### Updating Webhook URL
+Navigate to **Settings** > **Integrations** > **Discord**, update the webhook URL, and save.
+
+### Disconnecting
+Remove the webhook URL from exit1.dev settings and optionally delete the webhook from your Discord server.
+
+## Troubleshooting
+
+- **Notifications not appearing** - Verify the webhook URL is correct and the webhook hasn't been deleted in Discord
+- **Rate limiting** - Discord has rate limits on webhooks; exit1.dev handles this automatically with retries
+- **Permission errors** - Ensure the webhook has permission to post in the target channel

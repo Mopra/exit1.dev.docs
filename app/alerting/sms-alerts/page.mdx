@@ -1,0 +1,66 @@
+# SMS Alerts
+
+SMS alerts deliver text message notifications for check status changes.
+
+> **Note:** SMS alerts are available on the **Nano plan** only.
+
+## Setup
+
+### Phone Number Format
+
+SMS numbers must be in **E.164 international format**:
+
+| Format | Example |
+|---|---|
+| US/Canada | `+14155551234` |
+| UK | `+447911123456` |
+| Germany | `+4915112345678` |
+| Australia | `+61412345678` |
+
+### Adding Phone Numbers
+
+1. Navigate to **Settings** > **Alerting** > **SMS**
+2. Enter the phone number in E.164 format
+3. Verify the number via a confirmation code
+4. Save the configuration
+
+## How It Works
+
+SMS alerts are powered by **Twilio** for reliable global delivery. When a check status change triggers an alert:
+
+1. The alert system generates an SMS message
+2. The message is sent via Twilio's API
+3. Delivery is attempted to all configured numbers
+4. Delivery status is tracked in the alert log
+
+## SMS Content
+
+SMS messages are concise due to character limits:
+
+```
+[exit1.dev] Production Website is DOWN
+Status: 503 | Region: US Central
+Time: 2025-01-15 14:30 UTC
+```
+
+Recovery messages:
+
+```
+[exit1.dev] Production Website is UP
+Response: 200 (245ms) | Region: US Central
+Time: 2025-01-15 14:35 UTC
+```
+
+## Limitations
+
+- SMS delivery depends on carrier availability
+- International delivery times vary by region
+- Message length is limited (SMS character limits apply)
+- SMS alerts count toward your plan's alert quotas
+
+## Best Practices
+
+- Only enable SMS for critical, production checks
+- Verify phone numbers are in E.164 format
+- Use SMS alongside email and webhooks for redundancy
+- Monitor SMS delivery in the alert event log

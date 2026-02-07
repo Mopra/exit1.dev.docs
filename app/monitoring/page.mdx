@@ -1,0 +1,32 @@
+# Monitoring
+
+exit1.dev supports three types of monitoring checks to cover your infrastructure needs: website checks, API checks, and TCP/UDP checks.
+
+## Check Types
+
+### Website Checks
+HTTP/HTTPS monitoring for websites and web applications. Configure expected status codes, handle redirects, and validate responses.
+
+[Learn more about Website Checks](/monitoring/website-checks)
+
+### API Checks
+REST endpoint monitoring with support for all HTTP methods, custom headers, request bodies, and response validation.
+
+[Learn more about API Checks](/monitoring/api-checks)
+
+### TCP/UDP Checks
+Socket-level monitoring for non-HTTP services like databases, mail servers, and custom protocols.
+
+[Learn more about TCP/UDP Checks](/monitoring/tcp-udp-checks)
+
+## Common Features
+
+All check types share these capabilities:
+
+- **Multiple check regions** - Monitor from US Central, Europe West, or Asia Southeast
+- **Configurable intervals** - Check every 1 minute (Nano) or 5 minutes (Free)
+- **Consecutive failure thresholds** - Require multiple failures before alerting
+- **Smart verification** - Automatic 30-second re-check on first failure
+- **SSL monitoring** - Automatic certificate validation for HTTPS endpoints
+- **Alerting** - Email, SMS, webhook, Slack, and Discord notifications
+- **History and analytics** - Detailed logs, uptime statistics, and reports

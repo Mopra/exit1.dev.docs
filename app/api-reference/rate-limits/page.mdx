@@ -1,0 +1,47 @@
+# Rate Limits
+
+The exit1.dev API enforces rate limits to ensure fair usage and platform stability.
+
+## Limits
+
+| Scope | Limit |
+|---|---|
+| Pre-authentication | 20 requests/minute per IP |
+| Per API key | 5 requests/minute |
+| Per endpoint (per key) | 1 request/minute |
+| Daily per key | 500 requests |
+| Daily per user | 2,000 requests |
+
+## Rate Limit Headers
+
+Every API response includes rate limit headers:
+
+| Header | Description |
+|---|---|
+| `X-RateLimit-Limit` | Maximum requests allowed in the current window |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the rate limit window resets |
+
+## Exceeding Limits
+
+When you exceed a rate limit, the API returns a `429 Too Many Requests` response:
+
+```json
+{
+  "error": {
+    "code": 429,
+    "message": "Rate limit exceeded. Please retry after the reset time.",
+    "retryAfter": 60
+  }
+}
+```
+
+The `retryAfter` field indicates how many seconds to wait before making another request.
+
+## Best Practices
+
+- Cache API responses locally when possible
+- Implement exponential backoff when receiving 429 responses
+- Monitor the `X-RateLimit-Remaining` header to stay within limits
+- Spread requests evenly over time rather than bursting
+- Use cursor-based pagination to reduce the number of requests needed

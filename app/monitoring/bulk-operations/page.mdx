@@ -1,0 +1,68 @@
+# Bulk Operations
+
+exit1.dev provides tools for managing multiple checks at once.
+
+## Import
+
+### CSV Import
+Import checks from a CSV file with the following columns:
+
+- **name** (required) - Check name
+- **url** (required) - URL or host to monitor
+- **type** - Check type (website, api, tcp, udp)
+- **method** - HTTP method (GET, POST, etc.)
+- **interval** - Check interval in minutes
+- **expected_status** - Expected HTTP status code
+- **region** - Check region
+
+### JSON Import
+Import checks from a JSON file with an array of check objects:
+
+```json
+[
+  {
+    "name": "Production Website",
+    "url": "https://example.com",
+    "type": "website",
+    "method": "GET",
+    "expectedStatus": 200
+  }
+]
+```
+
+## Multi-Select
+
+Select multiple checks in the dashboard table view to perform bulk actions:
+
+- **Pause** - Pause all selected checks
+- **Resume** - Resume all selected checks
+- **Delete** - Delete all selected checks
+- **Move to folder** - Move selected checks to a folder
+- **Edit** - Open the bulk edit modal
+
+## Bulk Edit Modal
+
+The bulk edit modal lets you update settings across multiple checks at once:
+
+- **Check interval** - Change the interval for all selected checks
+- **Region** - Change the region for all selected checks
+- **Consecutive failures** - Update the failure threshold
+- **Alert settings** - Modify alert recipients
+
+Only the fields you change will be updated; other settings remain unchanged.
+
+## Folder Management
+
+Folders help organize your checks:
+
+- **Create folders** from the sidebar or checks page
+- **Drag and drop** checks into folders
+- **Nest folders** for hierarchical organization
+- **Bulk actions** apply to all checks in a folder
+
+## Best Practices
+
+- Use CSV/JSON import when setting up monitoring for many endpoints
+- Organize checks into folders by project, environment, or team
+- Use multi-select for quick bulk operations
+- Review changes before confirming bulk edits

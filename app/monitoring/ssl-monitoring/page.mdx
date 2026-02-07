@@ -1,0 +1,57 @@
+# SSL Monitoring
+
+exit1.dev automatically monitors SSL/TLS certificates for all HTTPS checks.
+
+## Automatic Monitoring
+
+SSL monitoring is enabled by default for any check using an `https://` URL. No additional configuration is required.
+
+## What's Monitored
+
+### Certificate Details
+
+exit1.dev tracks the following certificate information:
+
+| Field | Description |
+|---|---|
+| **Issuer** | The Certificate Authority that issued the certificate |
+| **Subject** | The domain the certificate is issued for |
+| **Valid From** | Certificate start date |
+| **Valid To** | Certificate expiration date |
+| **Serial Number** | Unique certificate identifier |
+| **Fingerprint** | Certificate fingerprint for verification |
+
+### Validation Checks
+
+Each SSL check verifies:
+
+- **Certificate validity** - Is the certificate currently valid?
+- **Certificate chain** - Is the full chain of trust intact?
+- **Expiration** - Is the certificate approaching expiration?
+- **Domain match** - Does the certificate match the monitored domain?
+
+## Refresh Cycle
+
+SSL certificate information is refreshed every **6 hours**. This means:
+
+- Certificate changes are detected within 6 hours
+- Expiration warnings update every 6 hours
+- New certificates are recognized after the next refresh cycle
+
+## SSL Alerts
+
+SSL-related alerts include:
+
+| Event | Description |
+|---|---|
+| `ssl_error` | Certificate is invalid, expired, or has chain issues |
+| `ssl_warning` | Certificate is approaching expiration |
+
+These alerts are sent through your configured alert channels (email, SMS, webhooks, Slack, Discord).
+
+## Best Practices
+
+- Monitor all production HTTPS endpoints
+- Set up alert channels to receive SSL warnings before certificates expire
+- Use [Domain Intelligence](/domain-intelligence) for additional domain expiration tracking
+- Review certificate details periodically in the dashboard

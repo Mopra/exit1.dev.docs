@@ -1,0 +1,57 @@
+# Reports
+
+Reports provide aggregated analytics about your monitoring data.
+
+## SLA Compliance
+
+Track your service level agreement compliance:
+
+- **Uptime percentage** over configurable time periods
+- **Target comparison** - Compare actual uptime against your SLA target
+- **Violation tracking** - Identify periods where SLA was breached
+
+### Example SLA Targets
+
+| SLA Level | Allowed Downtime/Month |
+|---|---|
+| 99.9% | 43.8 minutes |
+| 99.95% | 21.9 minutes |
+| 99.99% | 4.3 minutes |
+
+## Response Time Distribution
+
+Analyze response time patterns across your checks:
+
+- **Average response time** over the selected period
+- **P50, P90, P95, P99 percentiles** - Understand response time distribution
+- **Min/Max response times** - Identify outliers
+- **Trend analysis** - See how response times change over time
+
+## Incident Intervals
+
+Review downtime events and their patterns:
+
+- **Incident count** - Total number of downtime events
+- **Mean Time Between Failures (MTBF)** - Average time between incidents
+- **Mean Time to Recovery (MTTR)** - Average incident duration
+- **Longest incident** - Your worst downtime event
+- **Incident timeline** - Chronological view of all incidents
+
+## Time Ranges
+
+Reports can be generated for:
+
+| Range | Description |
+|---|---|
+| Last 24 hours | Recent performance |
+| Last 7 days | Weekly overview |
+| Last 30 days | Monthly summary |
+| Last 90 days | Quarterly review |
+| Custom range | Any date range within retention limits |
+
+## Best Practices
+
+- Review reports weekly to catch performance trends early
+- Use SLA compliance reports in stakeholder communications
+- Track MTTR over time to measure incident response improvement
+- Export data via the API for custom reporting dashboards

@@ -1,0 +1,150 @@
+# Check Stats
+
+Retrieve uptime statistics for a specific check.
+
+## Endpoint
+
+```
+GET /v1/public/checks/{id}/stats
+```
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | string | The unique check identifier |
+
+## Query Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `from` | string (ISO 8601) | 24 hours ago | Start date for statistics |
+| `to` | string (ISO 8601) | now | End date for statistics |
+
+## Response
+
+```json
+{
+  "data": {
+    "checkId": "abc123",
+    "period": {
+      "from": "2025-01-14T14:30:00Z",
+      "to": "2025-01-15T14:30:00Z"
+    },
+    "uptime": {
+      "percentage": 99.95,
+      "totalChecks": 720,
+      "successfulChecks": 719,
+      "failedChecks": 1
+    },
+    "responseTime": {
+      "average": 245,
+      "min": 120,
+      "max": 890,
+      "p50": 230,
+      "p90": 410,
+      "p95": 550,
+      "p99": 820
+    },
+    "timing": {
+      "dns": { "average": 12, "p95": 25 },
+      "connect": { "average": 25, "p95": 45 },
+      "tls": { "average": 45, "p95": 80 },
+      "ttfb": { "average": 150, "p95": 350 }
+    },
+    "incidents": {
+      "count": 1,
+      "totalDowntime": 300,
+      "mtbf": 86100,
+      "mttr": 300
+    }
+  }
+}
+```
+
+## Response Fields
+
+### Uptime
+
+| Field | Description |
+|---|---|
+| `percentage` | Uptime percentage over the period |
+| `totalChecks` | Total number of check executions |
+| `successfulChecks` | Number of successful checks |
+| `failedChecks` | Number of failed checks |
+
+### Response Time (in milliseconds)
+
+| Field | Description |
+|---|---|
+| `average` | Mean response time |
+| `min` | Fastest response |
+| `max` | Slowest response |
+| `p50` | 50th percentile (median) |
+| `p90` | 90th percentile |
+| `p95` | 95th percentile |
+| `p99` | 99th percentile |
+
+### Timing Breakdown (in milliseconds)
+
+| Field | Description |
+|---|---|
+| `dns` | DNS resolution time |
+| `connect` | TCP connection time |
+| `tls` | TLS handshake time |
+| `ttfb` | Time to first byte |
+
+### Incidents
+
+| Field | Description |
+|---|---|
+| `count` | Number of downtime incidents |
+| `totalDowntime` | Total downtime in seconds |
+| `mtbf` | Mean time between failures in seconds |
+| `mttr` | Mean time to recovery in seconds |
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats?from=2025-01-01T00:00:00Z&to=2025-01-31T23:59:59Z"
+```
+
+### JavaScript
+
+```javascript
+const params = new URLSearchParams({
+  from: "2025-01-01T00:00:00Z",
+  to: "2025-01-31T23:59:59Z",
+});
+
+const response = await fetch(
+  `https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats?${params}`,
+  {
+    headers: {
+      "X-Api-Key": "ek_live_your_key_here",
+    },
+  }
+);
+const stats = await response.json();
+console.log(stats.data);
+```
+
+### Python
+
+```python
+import requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats",
+    headers={"X-Api-Key": "ek_live_your_key_here"},
+    params={
+        "from": "2025-01-01T00:00:00Z",
+        "to": "2025-01-31T23:59:59Z"
+    }
+)
+stats = response.json()
+print(stats["data"])
+```
