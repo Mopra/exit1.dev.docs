@@ -5,7 +5,6 @@ const withNextra = nextra({});
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
-  basePath: "/exit1.dev.docs",
   images: { unoptimized: true },
   reactStrictMode: true,
   turbopack: {

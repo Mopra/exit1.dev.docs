@@ -36,7 +36,7 @@ export default async function RootLayout({
           navbar={
             <Navbar
               logo={logo}
-              projectLink="https://github.com/exit1-dev"
+              projectLink="https://github.com/Mopra/exit1.dev.docs"
             >
               <a href="https://exit1.dev" target="_blank" rel="noopener noreferrer">
                 Website
@@ -47,7 +47,7 @@ export default async function RootLayout({
             </Navbar>
           }
           pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/exit1-dev/exit1.dev.docs/tree/main"
+          docsRepositoryBase="https://github.com/Mopra/exit1.dev.docs/tree/master"
           footer={
             <Footer>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -62,7 +62,7 @@ export default async function RootLayout({
                   <a href="https://app.exit1.dev" target="_blank" rel="noopener noreferrer">
                     Exit1 Monitor App
                   </a>
-                  <a href="https://github.com/exit1-dev" target="_blank" rel="noopener noreferrer">
+                  <a href="https://github.com/Mopra/exit1.dev.docs" target="_blank" rel="noopener noreferrer">
                     GitHub
                   </a>
                 </div>
