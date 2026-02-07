@@ -1,0 +1,79 @@
+# exit1.dev
+
+> exit1.dev is a website uptime monitoring platform for developers and teams. It provides HTTP/HTTPS, API, and TCP/UDP monitoring from multiple global regions, SSL certificate tracking, domain expiration alerts, customizable status pages, multi-channel alerting (email, SMS, Slack, Discord, Teams, webhooks), and a read-only REST API. Plans: Free (50 monitors, 5-min intervals) and Nano ($3/mo, unlimited monitors, 1-min intervals).
+
+- [Website](https://exit1.dev)
+- [Dashboard](https://app.exit1.dev)
+- [Documentation](https://docs.exit1.dev)
+
+## Getting Started
+
+- [Overview](https://docs.exit1.dev/getting-started): Introduction to exit1.dev and what it can do
+- [Creating Your Account](https://docs.exit1.dev/getting-started/creating-your-account): Account setup with email or social sign-in
+- [Your First Check](https://docs.exit1.dev/getting-started/your-first-check): Setting up your first monitoring check
+- [Understanding the Dashboard](https://docs.exit1.dev/getting-started/understanding-the-dashboard): Navigating the monitoring dashboard
+
+## Monitoring
+
+- [Overview](https://docs.exit1.dev/monitoring): Check types and common monitoring features
+- [Website Checks](https://docs.exit1.dev/monitoring/website-checks): HTTP/HTTPS endpoint monitoring with status code validation
+- [API Checks](https://docs.exit1.dev/monitoring/api-checks): REST API monitoring with custom methods, headers, and request bodies
+- [TCP/UDP Checks](https://docs.exit1.dev/monitoring/tcp-udp-checks): Socket-level monitoring for databases, mail servers, and non-HTTP services
+- [Check Regions](https://docs.exit1.dev/monitoring/check-regions): Multi-region monitoring from US Central, Europe West, and Asia Southeast
+- [Check Intervals](https://docs.exit1.dev/monitoring/check-intervals): Configurable check frequency from 1 to 5 minutes depending on plan
+- [Response Validation](https://docs.exit1.dev/monitoring/response-validation): JSONPath and text-based response body validation
+- [SSL Monitoring](https://docs.exit1.dev/monitoring/ssl-monitoring): Automatic SSL certificate tracking and expiration alerts, refreshed every 6 hours
+- [Bulk Operations](https://docs.exit1.dev/monitoring/bulk-operations): Bulk import and bulk edit capabilities for managing checks at scale
+
+## Alerting
+
+- [Overview](https://docs.exit1.dev/alerting): Multi-channel alerting system with flap suppression
+- [Email Alerts](https://docs.exit1.dev/alerting/email-alerts): Email notifications with plan-based limits
+- [SMS Alerts](https://docs.exit1.dev/alerting/sms-alerts): SMS notifications (Nano plan, 20/month)
+- [Webhook Alerts](https://docs.exit1.dev/alerting/webhook-alerts): Custom HTTP webhook integration for alert delivery
+- [Alert Events](https://docs.exit1.dev/alerting/alert-events): Full alert event reference and payload format
+
+## Status Pages
+
+- [Overview](https://docs.exit1.dev/status-pages): Public and private status pages with widgets and branding
+- [Creating a Status Page](https://docs.exit1.dev/status-pages/creating-a-status-page): Step-by-step status page setup
+- [Widgets](https://docs.exit1.dev/status-pages/widgets): Visual components for displaying uptime and status
+- [Custom Domains](https://docs.exit1.dev/status-pages/custom-domains): Custom domain setup for status pages (Nano plan)
+- [Branding](https://docs.exit1.dev/status-pages/branding): Logo, favicon, and color customization
+
+## Analytics
+
+- [Overview](https://docs.exit1.dev/analytics): Analytics features and data retention policies
+- [Logs](https://docs.exit1.dev/analytics/logs): Detailed check history powered by BigQuery
+- [Reports](https://docs.exit1.dev/analytics/reports): SLA metrics, response time analysis, and incident reporting
+- [Uptime Statistics](https://docs.exit1.dev/analytics/uptime-statistics): Uptime calculations with DNS, TLS, and TTFB timing breakdowns
+
+## Domain Intelligence
+
+- [Overview](https://docs.exit1.dev/domain-intelligence): RDAP-powered domain expiration tracking (Nano plan)
+- [Setup](https://docs.exit1.dev/domain-intelligence/setup): Enabling domain tracking on checks
+- [Alert Thresholds](https://docs.exit1.dev/domain-intelligence/alert-thresholds): Configurable alerts at 30, 14, 7, and 1 day(s) before expiry
+
+## API Reference
+
+- [Overview](https://docs.exit1.dev/api-reference): REST API with base URL, conventions, and quick start guide
+- [Authentication](https://docs.exit1.dev/api-reference/authentication): API key creation and X-Api-Key header authentication
+- [Rate Limits](https://docs.exit1.dev/api-reference/rate-limits): 5 requests/min and 500 requests/day per API key
+- [Errors](https://docs.exit1.dev/api-reference/errors): Error response format and status codes
+- [List Checks](https://docs.exit1.dev/api-reference/list-checks): GET /v1/public/checks
+- [Get Check](https://docs.exit1.dev/api-reference/get-check): GET /v1/public/checks/{id}
+- [Check History](https://docs.exit1.dev/api-reference/check-history): GET /v1/public/checks/{id}/history
+- [Check Stats](https://docs.exit1.dev/api-reference/check-stats): GET /v1/public/checks/{id}/stats
+
+## Integrations
+
+- [Overview](https://docs.exit1.dev/integrations): Available integration channels
+- [Webhooks](https://docs.exit1.dev/integrations/webhooks): Custom HTTP endpoint integration
+- [Slack](https://docs.exit1.dev/integrations/slack): Slack channel notifications
+- [Discord](https://docs.exit1.dev/integrations/discord): Discord server notifications
+- [Teams](https://docs.exit1.dev/integrations/teams): Microsoft Teams Adaptive Card notifications
+
+## Billing
+
+- [Plans & Pricing](https://docs.exit1.dev/billing): Feature comparison between Free and Nano plans
+- [FAQ](https://docs.exit1.dev/billing/faq): Frequently asked questions about billing and plans

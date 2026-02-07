@@ -1,0 +1,108 @@
+# Microsoft Teams Integration
+
+Receive exit1.dev monitoring alerts directly in your Microsoft Teams channels.
+
+## Setup
+
+### Step 1: Create a Teams Incoming Webhook
+
+1. Open the Teams channel where you want to receive alerts
+2. Click the **...** (more options) menu next to the channel name
+3. Select **Connectors** (or **Workflows** depending on your Teams version)
+4. Find **Incoming Webhook** and click **Configure**
+5. Name the webhook (e.g., "exit1.dev Alerts") and optionally upload an icon
+6. Click **Create** and copy the generated webhook URL
+
+### Step 2: Add the Webhook to exit1.dev
+
+1. Navigate to **Settings** > **Integrations** > **Teams**
+2. Paste your Teams webhook URL
+3. Click **Save**
+
+### Step 3: Test
+
+Click **Send Test Notification** to verify the connection. A test message will appear in your configured Teams channel.
+
+## Notification Format
+
+Teams notifications are sent as **Adaptive Cards** (v1.2), providing a structured and readable layout:
+
+- **Status indicator** with emoji (red alert for down, green check for recovery, lock for SSL errors, warning for SSL warnings)
+- **Check name** and current status as the card title
+- **Fact set** with key-value pairs: URL, Time, Response Time, Status Code
+- **Formatted timestamp** in your configured timezone
+
+### Down Notification
+
+An Adaptive Card with:
+- Title: "🚨 Production Website is DOWN"
+- Facts: URL, Time, Response Time, Status Code
+
+### Recovery Notification
+
+An Adaptive Card with:
+- Title: "✅ Production Website is UP"
+- Facts: URL, Time, Response Time, Status Code
+
+### SSL Alert Notification
+
+An Adaptive Card with:
+- Title: "🔒 Production Website - SSL ERROR" or "⚠️ Production Website - SSL WARNING"
+- Facts: URL, Time, Error details, Days until expiry
+
+### Adaptive Card Payload Structure
+
+Teams webhooks receive a payload in this format:
+
+```json
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "contentUrl": null,
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.2",
+        "body": [
+          {
+            "type": "TextBlock",
+            "text": "🚨 Production Website is DOWN",
+            "weight": "Bolder",
+            "size": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              { "title": "URL", "value": "https://example.com" },
+              { "title": "Time", "value": "Jan 15, 2025 2:30 PM UTC" },
+              { "title": "Response Time", "value": "2450ms" },
+              { "title": "Status Code", "value": "503 Service Unavailable" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+## URL Detection
+
+exit1.dev automatically detects Teams webhooks by URL pattern. Webhook URLs containing `.webhook.office.com` or `.logic.azure.com` are treated as Teams format. You can also explicitly select **Microsoft Teams** as the webhook type during setup.
+
+## Managing the Integration
+
+### Changing Channel
+Create a new incoming webhook in Teams for the desired channel, then update the webhook URL in **Settings** > **Integrations** > **Teams**.
+
+### Removing
+Navigate to **Settings** > **Integrations** > **Teams** and click **Remove** to delete the webhook and stop Teams notifications.
+
+## Troubleshooting
+
+- **Notifications not appearing** - Verify the webhook URL is correct and the connector hasn't been removed from the Teams channel
+- **Invalid webhook URL** - Ensure the URL contains `.webhook.office.com` or `.logic.azure.com`
+- **Adaptive Card not rendering** - Teams requires Adaptive Card schema v1.2 or compatible; exit1.dev uses v1.2 by default
+- **Delayed notifications** - Check the exit1.dev status page for any service issues

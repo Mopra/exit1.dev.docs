@@ -3,7 +3,25 @@
     "allow": [
       "Bash(npx next build:*)",
       "Bash(npm run build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Next.js docs site with GitHub Pages deployment\n\nNextra-powered documentation site for exit1.dev with static export\nconfigured for GitHub Pages. Includes GitHub Actions CI/CD workflow.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh run view:*)",
+      "Bash(npm config:*)",
+      "Bash(npm install:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nRegenerate lockfile without private registry URLs\n\nFixes CI build failure caused by @fortawesome packages resolving\nto npm.fontawesome.com \\(requires auth token unavailable in CI\\).\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(nslookup:*)",
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:llmstxt.org)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" status)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" diff)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" log --oneline -5)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" add public/llms.txt public/robots.txt app/integrations/teams/ app/api-reference/_meta.js app/api-reference/page.mdx app/integrations/_meta.js app/integrations/page.mdx package.json package-lock.json .claude/settings.local.json)"
     ]
   }
 }

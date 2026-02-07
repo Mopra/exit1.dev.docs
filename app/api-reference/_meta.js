@@ -7,5 +7,4 @@ export default {
   "get-check": "Get Check",
   "check-history": "Check History",
   "check-stats": "Check Stats",
-  openapi: "Interactive API Docs",
 };

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.exit1.dev/sitemap.xml
+Llms-txt: https://docs.exit1.dev/llms.txt

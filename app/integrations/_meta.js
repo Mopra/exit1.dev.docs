@@ -3,4 +3,5 @@ export default {
   webhooks: "Webhooks",
   slack: "Slack",
   discord: "Discord",
+  teams: "Teams",
 };
