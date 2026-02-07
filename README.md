@@ -27,15 +27,6 @@ This is the source for the exit1 documentation site, built with [Next.js](https:
 - **API Reference** — Full REST API documentation for programmatic access
 - **Integrations** — Slack, Discord, and webhook integrations
 
-## Development
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the docs locally.
-
 ## License
 
 Copyright exit1.dev. All rights reserved.
