@@ -38,7 +38,6 @@
 - [Overview](https://docs.exit1.dev/status-pages): Public and private status pages with widgets and branding
 - [Creating a Status Page](https://docs.exit1.dev/status-pages/creating-a-status-page): Step-by-step status page setup
 - [Widgets](https://docs.exit1.dev/status-pages/widgets): Visual components for displaying uptime and status
-- [Custom Domains](https://docs.exit1.dev/status-pages/custom-domains): Custom domain setup for status pages (Nano plan)
 - [Branding](https://docs.exit1.dev/status-pages/branding): Logo, favicon, and color customization
 
 ## Analytics

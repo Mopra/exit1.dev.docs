@@ -23,7 +23,7 @@ This is the source for the exit1 documentation site, built with [Next.js](https:
 - **Getting Started** — Account setup, creating your first check, navigating the dashboard
 - **Monitoring** — Website, API, TCP/UDP, and SSL checks with configurable intervals and regions
 - **Alerting** — Email, SMS, webhook, and integration-based notifications
-- **Status Pages** — Public status pages with custom domains and branding
+- **Status Pages** — Public status pages with branding
 - **API Reference** — Full REST API documentation for programmatic access
 - **Integrations** — Slack, Discord, and webhook integrations
 
