@@ -18,10 +18,18 @@ GET /v1/public/checks/{id}/stats
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `from` | string (ISO 8601) | 24 hours ago | Start date for statistics |
+| `from` | string (ISO 8601) | 24 hours ago | Start date for statistics (single-range mode) |
 | `to` | string (ISO 8601) | now | End date for statistics |
+| `ranges` | string | — | Comma-separated predefined ranges for [multi-range mode](#multi-range-mode) (e.g. `1d,7d,30d`) |
 
-## Response
+This endpoint supports two modes:
+
+- **Single-range mode** (default) — Use `from` and `to` to query a custom date range
+- **Multi-range mode** — Use `ranges` to fetch statistics for multiple predefined time windows in a single request
+
+> **Note:** The `from` parameter is ignored when `ranges` is provided. The `to` parameter can be used with either mode to set the end date.
+
+## Response (Single-Range Mode)
 
 ```json
 {
@@ -103,16 +111,96 @@ GET /v1/public/checks/{id}/stats
 | `mtbf` | Mean time between failures in seconds |
 | `mttr` | Mean time to recovery in seconds |
 
+## Multi-Range Mode
+
+Request statistics for multiple predefined time windows in a single API call by using the `ranges` query parameter. This avoids making separate requests for each time period.
+
+### Allowed Ranges
+
+| Range | Description |
+|---|---|
+| `1h` | Last 1 hour |
+| `6h` | Last 6 hours |
+| `1d` | Last 1 day |
+| `7d` | Last 7 days |
+| `30d` | Last 30 days |
+| `60d` | Last 60 days |
+| `90d` | Last 90 days |
+
+You can request up to **5 ranges** per request.
+
+### Multi-Range Response
+
+```json
+{
+  "data": {
+    "1d": {
+      "totalChecks": 720,
+      "onlineChecks": 714,
+      "offlineChecks": 6,
+      "uptimePercentage": 97.5,
+      "totalDurationMs": 86400000,
+      "onlineDurationMs": 84240000,
+      "offlineDurationMs": 2160000,
+      "responseSampleCount": 714,
+      "avgResponseTime": 245,
+      "minResponseTime": 120,
+      "maxResponseTime": 890
+    },
+    "7d": {
+      "totalChecks": 5040,
+      "onlineChecks": 4968,
+      "offlineChecks": 72,
+      "uptimePercentage": 98.6,
+      "totalDurationMs": 604800000,
+      "onlineDurationMs": 596332800,
+      "offlineDurationMs": 8467200,
+      "responseSampleCount": 4968,
+      "avgResponseTime": 252,
+      "minResponseTime": 98,
+      "maxResponseTime": 1240
+    }
+  }
+}
+```
+
+### Multi-Range Response Fields
+
+The response is a dictionary keyed by range name. Each entry contains:
+
+| Field | Description |
+|---|---|
+| `totalChecks` | Total number of check executions in the range |
+| `onlineChecks` | Number of successful checks |
+| `offlineChecks` | Number of failed checks |
+| `uptimePercentage` | Uptime percentage calculated from continuous duration |
+| `totalDurationMs` | Total time span of the range in milliseconds |
+| `onlineDurationMs` | Total online duration in milliseconds |
+| `offlineDurationMs` | Total offline duration in milliseconds |
+| `responseSampleCount` | Number of checks with valid response time data |
+| `avgResponseTime` | Average response time in milliseconds |
+| `minResponseTime` | Minimum response time in milliseconds |
+| `maxResponseTime` | Maximum response time in milliseconds |
+
+### Multi-Range Errors
+
+| Status | Condition | Example |
+|---|---|---|
+| `400` | Invalid range value | `{"error": "Invalid ranges: 2d. Allowed: 1h, 6h, 1d, 7d, 30d, 60d, 90d"}` |
+| `400` | More than 5 ranges | `{"error": "Maximum 5 ranges per request"}` |
+
 ## Code Examples
 
-### cURL
+### Single-Range Mode
+
+#### cURL
 
 ```bash
 curl -H "X-Api-Key: ek_live_your_key_here" \
   "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats?from=2025-01-01T00:00:00Z&to=2025-01-31T23:59:59Z"
 ```
 
-### JavaScript
+#### JavaScript
 
 ```javascript
 const params = new URLSearchParams({
@@ -132,7 +220,7 @@ const stats = await response.json();
 console.log(stats.data);
 ```
 
-### Python
+#### Python
 
 ```python
 import requests
@@ -147,4 +235,53 @@ response = requests.get(
 )
 stats = response.json()
 print(stats["data"])
+```
+
+### Multi-Range Mode
+
+#### cURL
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats?ranges=1d,7d,30d"
+```
+
+#### JavaScript
+
+```javascript
+const params = new URLSearchParams({
+  ranges: "1d,7d,30d",
+});
+
+const response = await fetch(
+  `https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats?${params}`,
+  {
+    headers: {
+      "X-Api-Key": "ek_live_your_key_here",
+    },
+  }
+);
+const stats = await response.json();
+
+// Access stats for each range
+console.log(stats.data["1d"].uptimePercentage);
+console.log(stats.data["7d"].uptimePercentage);
+console.log(stats.data["30d"].uptimePercentage);
+```
+
+#### Python
+
+```python
+import requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/stats",
+    headers={"X-Api-Key": "ek_live_your_key_here"},
+    params={"ranges": "1d,7d,30d"}
+)
+stats = response.json()
+
+# Access stats for each range
+for range_name, range_stats in stats["data"].items():
+    print(f"{range_name}: {range_stats['uptimePercentage']}% uptime")
 ```
