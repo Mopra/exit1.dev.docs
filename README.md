@@ -10,11 +10,11 @@ Most monitoring tools are either too bloated or too basic. exit1 sits in the swe
 
 ## Quick Links
 
-| | |
-|---|---|
-| **Website** | [exit1.dev](https://exit1.dev) — Learn about the platform |
-| **Monitor App** | [app.exit1.dev](https://app.exit1.dev) — Sign in and manage your checks |
-| **Documentation** | [docs.exit1.dev](https://docs.exit1.dev) — Guides, API reference, and setup instructions |
+| | | |
+|---|---|---|
+| **Website** | [exit1.dev](https://exit1.dev) — Learn about the platform | [Repo](https://github.com/Mopra/exit1.dev.website) |
+| **Monitor App** | [app.exit1.dev](https://app.exit1.dev) — Sign in and manage your checks | [Repo](https://github.com/Mopra/exit1.dev) |
+| **Documentation** | [docs.exit1.dev](https://docs.exit1.dev) — Guides, API reference, and setup instructions | [Repo](https://github.com/Mopra/exit1.dev.docs) |
 
 ## What's in this repo?
 
