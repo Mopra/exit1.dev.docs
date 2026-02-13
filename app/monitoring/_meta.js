@@ -8,4 +8,5 @@ export default {
   "response-validation": "Response Validation",
   "ssl-monitoring": "SSL Monitoring",
   "bulk-operations": "Bulk Operations",
+  "maintenance-mode": "Maintenance Mode",
 };

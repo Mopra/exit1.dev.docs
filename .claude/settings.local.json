@@ -21,7 +21,10 @@
       "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" status)",
       "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" diff)",
       "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" log --oneline -5)",
-      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" add public/llms.txt public/robots.txt app/integrations/teams/ app/api-reference/_meta.js app/api-reference/page.mdx app/integrations/_meta.js app/integrations/page.mdx package.json package-lock.json .claude/settings.local.json)"
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" add public/llms.txt public/robots.txt app/integrations/teams/ app/api-reference/_meta.js app/api-reference/page.mdx app/integrations/_meta.js app/integrations/page.mdx package.json package-lock.json .claude/settings.local.json)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" rm app/api-reference/openapi/page.tsx components/openapi-viewer.tsx)",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" commit -m \"$\\(cat <<''EOF''\nAdd llms.txt, robots.txt, Teams integration, and remove OpenAPI viewer\n\nAdd /llms.txt following the llms.txt standard for LLM discoverability,\nand /robots.txt with Llms-txt directive. Add Microsoft Teams integration\ndocs. Remove interactive OpenAPI viewer component and dependencies.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C \"c:\\\\Users\\\\morte\\\\Documents\\\\GitHub\\\\exit1.dev.docs\" push)"
     ]
   }
 }

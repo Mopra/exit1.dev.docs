@@ -1,0 +1,187 @@
+# Maintenance Mode
+
+Maintenance mode lets you temporarily suppress all alerts and status changes for a check during planned maintenance windows. Unlike disabling a check, maintenance mode keeps the check running so you still collect response time and status code data — but no alerts fire, no downtime is recorded, and your uptime percentage stays clean.
+
+Available on the **Nano tier**.
+
+---
+
+## Why use it?
+
+When you're deploying, migrating DNS, upgrading servers, or doing any planned work that will take your service down temporarily, maintenance mode prevents:
+
+- **False alarms** — No email, webhook, or SMS alerts during the window
+- **Polluted uptime stats** — Planned downtime doesn't count against your uptime percentage
+- **Noisy logs** — No down/up status flapping while you work
+
+You still get full visibility. Checks continue to execute, response times are recorded, and status codes are logged. You just don't get woken up at 3 AM for something you already know about.
+
+---
+
+## Three ways to use it
+
+### Immediate ("Now")
+
+Enter maintenance right now for a fixed duration. Best for ad-hoc maintenance or when you're about to start work.
+
+**Durations**: 5 minutes, 15 minutes, 30 minutes, 1 hour
+
+### Scheduled (one-time)
+
+Set a future maintenance window. The check will automatically enter and exit maintenance at the times you specify. Best for planned deployments or change windows.
+
+**Durations**: 5 minutes up to 4 hours. Pick a date, time, and duration.
+
+### Recurring
+
+Set a repeating maintenance window on specific days of the week. The check automatically enters maintenance at the same time every week. Best for regular maintenance windows like nightly backups or weekly deploys.
+
+**Configuration**:
+- Pick one or more days of the week
+- Set the start time (in your local timezone)
+- Choose a duration (5 minutes up to 4 hours)
+
+---
+
+## What happens during maintenance
+
+| Behavior | During Maintenance | Normal Operation |
+|---|---|---|
+| Check execution | Runs normally | Runs normally |
+| Response time / status code | Recorded | Recorded |
+| Status transitions (up/down) | Frozen | Active |
+| Email, webhook, SMS alerts | Suppressed | Active |
+| SSL certificate alerts | Suppressed | Active |
+| Domain expiry alerts | Suppressed | Active |
+| Downtime counter | Not incremented | Incremented |
+| Uptime % calculation | Counts as uptime | Reflects actual status |
+| Consecutive failure/success counters | Frozen | Updated |
+| Log entries | Maintenance start/end logged | Normal events logged |
+| BigQuery history | Tagged with `maintenance: true` | Normal |
+
+### Status freezing explained
+
+When maintenance starts, the check's status is frozen at whatever it was. If the check was online, it stays online for the duration. If it was offline (rare, but possible), it stays offline.
+
+These fields are **still updated** during maintenance (useful for debugging):
+- Response time
+- Last status code
+- Last checked timestamp
+
+These fields are **frozen** during maintenance:
+- Online/offline status
+- Consecutive failure and success counts
+- Last error message
+- Downtime count
+- Last downtime timestamp
+
+### Verification check on exit
+
+When maintenance ends — whether manually, by timer expiry, or when a recurring window closes — an immediate verification check is triggered. This establishes the real status right away and fires any necessary alerts if the service didn't come back up after maintenance.
+
+---
+
+## How to enter maintenance mode
+
+### Single check
+
+1. Open the actions menu on any check (the three-dot menu on check cards or table rows)
+2. Click **Enter Maintenance**
+3. Choose your mode: **Now**, **Scheduled**, or **Recurring**
+4. Set the duration and optionally add a reason (e.g., "Server upgrade" or "DNS migration")
+5. Confirm
+
+### Bulk actions
+
+1. Select multiple checks using the checkboxes in the table view
+2. Use the bulk actions bar to enter maintenance on all selected checks at once
+
+### Exiting early
+
+You can always exit maintenance before the timer expires:
+
+1. Open the actions menu on the check
+2. Click **Exit Maintenance**
+
+The check immediately returns to normal operation and a verification check runs right away.
+
+### Cancelling scheduled or recurring windows
+
+- **Scheduled**: Click **Cancel Scheduled** in the actions menu to remove an upcoming one-time window
+- **Recurring**: Click **Delete Recurring** in the actions menu to stop the recurring window. You can also click **Edit Recurring** to modify the schedule.
+
+---
+
+## Visual indicators
+
+Checks in maintenance mode are clearly marked throughout the UI:
+
+- **Status badge**: An amber "Maintenance" badge with a wrench icon replaces the normal online/offline indicator
+- **Check cards and rows**: A subtle amber border highlights checks currently in maintenance
+- **Tooltips**: Hover to see the maintenance reason and remaining time
+- **Scheduled/recurring info**: Upcoming or recurring windows are shown with their next run time
+- **Logs**: Maintenance start and end events appear in your logs with amber styling, including the duration of each maintenance window
+
+---
+
+## Logs and history
+
+Maintenance mode creates log entries that appear on your Logs page:
+
+- **Maintenance started** — logged when entering maintenance (includes the reason if provided)
+- **Maintenance ended** — logged when exiting (includes total duration)
+- **Maintenance scheduled** — logged when a future window is set
+- **Maintenance cancelled** — logged when a scheduled window is cancelled
+
+In BigQuery history exports, check results recorded during maintenance carry a `maintenance: true` flag so you can filter or include them in custom reports.
+
+---
+
+## Public API
+
+The `maintenanceMode` field is included in the check response when using the exit1.dev public API:
+
+```json
+{
+  "id": "abc123",
+  "url": "https://example.com",
+  "status": "online",
+  "maintenanceMode": true
+}
+```
+
+This is read-only. API-triggered maintenance toggle is planned for a future release.
+
+---
+
+## Edge cases and FAQ
+
+**What if a check is both disabled and in maintenance?**
+Disabled takes priority. The scheduler won't run the check at all. When you re-enable it, maintenance mode is still active if the window hasn't expired yet. If it expired while disabled, it gets cleaned up on the next scheduler run.
+
+**What happens if I start maintenance while the check is already offline?**
+The offline status is frozen. When maintenance ends, the verification check determines the real status and fires alerts if the service is still down.
+
+**What if I downgrade from Nano to the free tier?**
+Active maintenance windows continue to function and will auto-expire normally. You just won't be able to create new maintenance windows from the UI until you upgrade again.
+
+**How accurate is the auto-expiry timing?**
+The check scheduler runs every ~2 minutes per region. In the worst case, maintenance may expire up to 2 minutes after the configured end time. The first check after expiry acts as the verification check.
+
+**Does maintenance affect my uptime percentage?**
+No. Maintenance periods count as uptime in all uptime calculations. This is intentional — planned maintenance is a good operational practice, not downtime.
+
+**Can I extend an active maintenance window?**
+Not directly. Exit maintenance and re-enter with a new duration. Extending in-place is planned for a future release.
+
+**How do recurring windows handle timezones?**
+Recurring windows use your specified IANA timezone (e.g., "America/New_York", "Europe/London"). The scheduler converts to your local time on each run, so recurring windows stay correct across daylight saving time changes.
+
+**Will I get a notification when maintenance starts or ends automatically?**
+Currently, scheduled and recurring windows activate and deactivate silently (beyond the log entry). Maintenance start/end notifications are planned for a future release.
+
+---
+
+## Availability
+
+Maintenance mode is available on the **Nano tier**. Free-tier users can see the menu option but will be prompted to upgrade when clicking it.
