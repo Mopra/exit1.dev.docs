@@ -1,0 +1,111 @@
+# Request Headers & User Agent
+
+Every HTTP/HTTPS check sends a `User-Agent` header that identifies the request. Some services — particularly those behind Cloudflare, AWS WAF, or similar protection layers — may block requests from unrecognized user agents.
+
+## Default User Agent
+
+By default, exit1.dev sends the following user agent with every check:
+
+```
+Exit1-Website-Monitor/1.0
+```
+
+Along with these default headers:
+
+| Header | Value |
+|---|---|
+| `User-Agent` | `Exit1-Website-Monitor/1.0` |
+| `Accept` | `*/*` |
+| `Accept-Encoding` | `identity` |
+
+## Why Checks Might Be Blocked
+
+Firewalls and bot-protection services often filter requests based on the `User-Agent` header. Common reasons your checks may return unexpected status codes (like `403 Forbidden` or `503 Service Unavailable`):
+
+- **Cloudflare Bot Management** blocks non-browser user agents by default on some security levels
+- **AWS WAF** rules may reject requests that don't match a known browser signature
+- **Rate limiting rules** may be stricter for bot-like user agents
+- **Server-side middleware** that checks for browser-like user agents
+
+If your check is returning errors but the site works fine in a browser, the user agent is likely being blocked.
+
+## Changing the User Agent
+
+You can override the default user agent by adding a `User-Agent` header in the **Request Headers** field under **Advanced Configuration** (Step 3) when creating or editing a check.
+
+### Format
+
+Enter headers one per line in `Header-Name: value` format:
+
+```
+User-Agent: Mozilla/5.0 (compatible; Exit1Bot/1.0; +https://exit1.dev)
+```
+
+Any custom `User-Agent` header you set will replace the default `Exit1-Website-Monitor/1.0` value.
+
+### Example: Getting Through Cloudflare
+
+To bypass Cloudflare's bot detection, use a standard browser user agent string:
+
+```
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+```
+
+This mimics a Chrome browser on Windows and will pass most bot-detection filters.
+
+### Other Common User Agent Strings
+
+| User Agent | Description |
+|---|---|
+| `Mozilla/5.0 (compatible; Exit1Bot/1.0; +https://exit1.dev)` | Identifies as a bot but follows the standard bot format with a URL for verification |
+| `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36` | Chrome on Windows |
+| `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36` | Chrome on macOS |
+| `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36` | Chrome on Linux |
+
+## Adding Other Custom Headers
+
+The Request Headers field supports any valid HTTP header, not just `User-Agent`. You can combine multiple headers:
+
+```
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Authorization: Bearer your-api-token
+Accept: application/json
+```
+
+See [API Checks](/monitoring/api-checks) for more details on custom headers and request configuration.
+
+## Best Practices
+
+- **Start with the default** — only change the user agent if your checks are being blocked
+- **Try an identifiable bot string first** (like `Exit1Bot/1.0`) before switching to a full browser string
+- **Whitelist instead when possible** — if you control the server, whitelist `Exit1-Website-Monitor/1.0` in your firewall rules rather than masking the user agent
+- **Cloudflare users** can add a WAF exception rule for the `Exit1-Website-Monitor/1.0` user agent instead of changing it on the exit1 side
+- **Keep it realistic** — if you use a browser user agent, use a recent version string to avoid being flagged as outdated
+
+## Whitelisting exit1.dev
+
+If you prefer to keep the default user agent and whitelist it instead:
+
+### Cloudflare
+
+1. Go to **Security > WAF** in your Cloudflare dashboard
+2. Create a custom rule with the expression: `(http.user_agent contains "Exit1-Website-Monitor")`
+3. Set the action to **Skip** (or **Allow**)
+
+### Nginx
+
+Add to your server block:
+
+```nginx
+if ($http_user_agent ~* "Exit1-Website-Monitor") {
+    set $allowed 1;
+}
+```
+
+### Apache
+
+Add to your `.htaccess` or virtual host config:
+
+```apache
+SetEnvIfNoCase User-Agent "Exit1-Website-Monitor" allowed_bot
+```

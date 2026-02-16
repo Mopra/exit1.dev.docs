@@ -5,6 +5,7 @@ export default {
   "tcp-udp-checks": "TCP/UDP Checks",
   "check-regions": "Check Regions",
   "check-intervals": "Check Intervals",
+  "request-headers": "Request Headers & User Agent",
   "response-validation": "Response Validation",
   "ssl-monitoring": "SSL Monitoring",
   "bulk-operations": "Bulk Operations",
