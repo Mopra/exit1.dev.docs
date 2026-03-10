@@ -1,0 +1,69 @@
+# ICMP Checks
+
+ICMP checks monitor host availability and network latency using ICMP Echo (ping) requests. They are the simplest way to verify that a host is reachable on the network.
+
+## When to Use ICMP Checks
+
+Use ICMP checks when you need to monitor basic network reachability:
+
+- **Network devices** - Routers, switches, firewalls, and load balancers
+- **Bare-metal servers** - Hosts where no HTTP service is running
+- **Infrastructure endpoints** - DNS servers, gateways, and network appliances
+- **IP-based services** - Any host identified by IP address or hostname
+- **Latency tracking** - Measure round-trip time to any host on the internet
+
+## Configuration
+
+### Host
+
+Enter the hostname or public IP address of the target to monitor. Both IPv4 addresses and domain names are supported.
+
+> **Note:** Private IP addresses (127.0.0.1, 10.x, 172.16-31.x, 192.168.x) and reserved addresses are not allowed.
+
+### Check Frequency
+
+Set how often the ICMP check runs:
+
+- **Free tier** - Minimum 5-minute intervals
+- **Nano tier** - Minimum 2-minute intervals
+
+### Response Time Limit
+
+Set the maximum acceptable round-trip time in milliseconds. If the ping response exceeds this threshold, the check can be flagged for slow performance.
+
+## How It Works
+
+1. An ICMP Echo Request packet is sent to the specified host
+2. The system waits for an ICMP Echo Reply from the target
+3. If a reply is received, the check is marked as **UP** and the round-trip time (RTT) is recorded
+4. If no reply is received within the timeout period, the check is marked as **DOWN**
+5. On first failure, an automatic 30-second re-check is performed to prevent false alerts
+6. After 4 consecutive failures within 5 minutes, an alert is triggered
+
+## Performance Metrics
+
+ICMP checks record the following metrics:
+
+| Metric | Description |
+|--------|-------------|
+| **Round-Trip Time (RTT)** | Time in milliseconds for the packet to reach the host and return |
+| **TTL (Time To Live)** | Number of network hops remaining, useful for routing diagnostics |
+| **Target IP** | Resolved IP address of the hostname |
+| **IP Family** | Whether the connection used IPv4 or IPv6 |
+
+Additionally, each check enriches results with geographic metadata including country, region, city, ASN, ISP, and organization information for the target host.
+
+## Best Practices
+
+- **Use ICMP for infrastructure, HTTP for applications** - ICMP checks verify network reachability but cannot validate application health. Use [website checks](/monitoring/website-checks) or [API checks](/monitoring/api-checks) for application-level monitoring.
+- **Combine with other check types** - Monitor the same host with both ICMP and HTTP/TCP checks for comprehensive coverage.
+- **Set realistic response time limits** - Typical RTT varies by distance. Local hosts respond in under 10ms, while intercontinental targets may take 100-300ms.
+- **Monitor network devices directly** - Routers and switches often don't run HTTP services, making ICMP the ideal check type.
+
+## Limitations
+
+- ICMP checks only verify network reachability, not application-level health
+- Some hosts and firewalls block ICMP traffic, which would cause false-negative results
+- Response validation is not available for ICMP checks
+- SSL monitoring is not applicable to ICMP checks
+- Only one ICMP packet is sent per check (no multi-packet loss analysis)

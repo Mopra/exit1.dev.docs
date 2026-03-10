@@ -3,6 +3,7 @@ export default {
   "website-checks": "Website Checks",
   "api-checks": "API Checks",
   "tcp-udp-checks": "TCP/UDP Checks",
+  "icmp-checks": "ICMP Checks",
   "check-regions": "Check Regions",
   "check-intervals": "Check Intervals",
   "request-headers": "Request Headers & User Agent",
