@@ -1,0 +1,72 @@
+# WebSocket Checks
+
+WebSocket checks monitor WS and WSS (WebSocket Secure) endpoints by establishing a full WebSocket connection and verifying the handshake completes successfully. They are designed for real-time services that rely on persistent connections.
+
+## When to Use WebSocket Checks
+
+Use WebSocket checks for services that depend on WebSocket connections:
+
+- **Real-time applications** - Chat platforms, live dashboards, and collaboration tools
+- **Trading and financial platforms** - Live price feeds and order book streams
+- **Gaming servers** - Multiplayer backends and matchmaking services
+- **IoT and telemetry** - Sensor data streams and device communication
+- **Push notification services** - Real-time event delivery systems
+- **Live media** - Streaming services and live comment feeds
+
+## Configuration
+
+### URL
+
+Enter the WebSocket endpoint URL. Both `ws://` and `wss://` protocols are supported.
+
+> **Note:** For production services, use `wss://` (WebSocket Secure) which runs over TLS. SSL certificate monitoring is automatically included for WSS endpoints.
+
+### Check Frequency
+
+Set how often the WebSocket check runs:
+
+- **Free tier** - Minimum 5-minute intervals
+- **Nano tier** - Minimum 1-minute intervals
+
+### Response Time Limit
+
+Set the maximum acceptable time for the WebSocket handshake to complete, in milliseconds. If the connection takes longer than this threshold, the check can be flagged for slow performance.
+
+## How It Works
+
+1. An HTTP upgrade request is sent to the specified WebSocket URL
+2. The server responds with a `101 Switching Protocols` status and the connection is upgraded to WebSocket
+3. If the handshake completes successfully, the check is marked as **UP** and the connection time is recorded
+4. The connection is immediately closed after successful verification
+5. If the handshake fails or times out, the check is marked as **DOWN**
+6. On first failure, an automatic 30-second re-check is performed to prevent false alerts
+7. After consecutive failures, an alert is triggered
+
+## Performance Metrics
+
+WebSocket checks record the following metrics:
+
+| Metric | Description |
+|--------|-------------|
+| **Connection Time** | Total time to complete the WebSocket handshake in milliseconds |
+| **DNS Lookup** | Time to resolve the hostname |
+| **TCP Connect** | Time to establish the TCP connection |
+| **TLS Handshake** | Time to complete TLS negotiation (WSS only) |
+| **Target IP** | Resolved IP address of the endpoint |
+| **IP Family** | Whether the connection used IPv4 or IPv6 |
+
+For WSS endpoints, SSL certificate details are also captured including issuer, validity dates, and expiration alerts.
+
+## Best Practices
+
+- **Monitor WSS endpoints in production** - Always use `wss://` for production WebSocket services. The check validates both the WebSocket handshake and the SSL certificate.
+- **Set appropriate timeout thresholds** - WebSocket handshakes are typically fast (under 500ms). Set response time limits based on your baseline performance.
+- **Combine with HTTP checks** - If your WebSocket service also exposes REST endpoints, monitor both to distinguish between WebSocket-specific and general application issues.
+- **Monitor from relevant regions** - Choose monitoring regions close to your users to measure realistic connection times.
+
+## Limitations
+
+- WebSocket checks verify the handshake only; they do not send or validate WebSocket messages after connection
+- Custom headers and authentication tokens for the upgrade request are not currently supported
+- Response body validation is not available for WebSocket checks
+- Only the initial connection is tested — long-lived connection stability is not monitored
