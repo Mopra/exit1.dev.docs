@@ -1,0 +1,44 @@
+# Scopes
+
+API key scopes control which operations a key can perform. Scopes are assigned when creating an API key and determine whether the key can read, write, or delete checks.
+
+## Available Scopes
+
+| Scope | Description |
+|---|---|
+| `checks:read` | List checks, get check details, history, and stats |
+| `checks:write` | Create, update, and toggle checks |
+| `checks:delete` | Delete checks |
+
+## Default Scope
+
+API keys created without specifying scopes default to **`checks:read`** only. This means existing keys are read-only and cannot modify your checks.
+
+## Scope Requirements by Endpoint
+
+| Endpoint | Method | Required Scope |
+|---|---|---|
+| `/v1/public/checks` | GET | `checks:read` |
+| `/v1/public/checks/{id}` | GET | `checks:read` |
+| `/v1/public/checks/{id}/history` | GET | `checks:read` |
+| `/v1/public/checks/{id}/stats` | GET | `checks:read` |
+| `/v1/public/checks` | POST | `checks:write` |
+| `/v1/public/checks/{id}` | PATCH | `checks:write` |
+| `/v1/public/checks/{id}/toggle` | POST | `checks:write` |
+| `/v1/public/checks/{id}` | DELETE | `checks:delete` |
+
+## Error Response
+
+If your API key does not have the required scope, the API returns a `403 Forbidden`:
+
+```json
+{
+  "error": "API key does not have the required scope: checks:write"
+}
+```
+
+## Creating a Scoped Key
+
+When creating an API key in **Settings > API**, select the scopes you need. You can assign multiple scopes to a single key.
+
+For full CRUD access, enable all three scopes: `checks:read`, `checks:write`, and `checks:delete`.

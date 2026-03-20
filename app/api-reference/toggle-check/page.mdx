@@ -1,0 +1,122 @@
+# Toggle Check
+
+Enable or disable a monitoring check. Disabling a check pauses all monitoring and records the event in check history. Enabling a check resumes monitoring immediately.
+
+**Required scope:** `checks:write`
+
+## Endpoint
+
+```
+POST /v1/public/checks/{id}/toggle
+```
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | string | The unique check identifier |
+
+## Request Body
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `disabled` | boolean | Yes | `true` to disable (pause), `false` to enable (resume) |
+| `reason` | string | No | Reason for disabling (max 500 characters, default: `"Disabled via API"`) |
+
+## Response
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "success": true,
+    "disabled": true,
+    "message": "Check disabled"
+  }
+}
+```
+
+When enabling:
+
+```json
+{
+  "data": {
+    "success": true,
+    "disabled": false,
+    "message": "Check enabled"
+  }
+}
+```
+
+## Error Responses
+
+| Status | Description |
+|---|---|
+| 400 | `disabled` field missing or not a boolean |
+| 403 | API key missing `checks:write` scope, or check belongs to another user |
+| 404 | Check not found |
+
+## Code Examples
+
+### cURL
+
+**Disable a check:**
+
+```bash
+curl -X POST \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"disabled": true, "reason": "Scheduled maintenance"}' \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/CHECK_ID/toggle"
+```
+
+**Enable a check:**
+
+```bash
+curl -X POST \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"disabled": false}' \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/CHECK_ID/toggle"
+```
+
+### JavaScript
+
+```javascript
+const checkId = "CHECK_ID";
+
+// Disable
+const response = await fetch(
+  `https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/${checkId}/toggle`,
+  {
+    method: "POST",
+    headers: {
+      "X-Api-Key": process.env.EXIT1_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      disabled: true,
+      reason: "Scheduled maintenance",
+    }),
+  }
+);
+console.log(await response.json());
+```
+
+### Python
+
+```python
+import os, requests
+
+check_id = "CHECK_ID"
+
+# Disable
+response = requests.post(
+    f"https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/{check_id}/toggle",
+    headers={"X-Api-Key": os.environ["EXIT1_API_KEY"]},
+    json={"disabled": True, "reason": "Scheduled maintenance"},
+)
+response.raise_for_status()
+print(response.json())
+```

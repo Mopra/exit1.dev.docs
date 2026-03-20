@@ -1,0 +1,77 @@
+# Delete Check
+
+Permanently delete a monitoring check. This also removes the check from any status pages it belongs to.
+
+**Required scope:** `checks:delete`
+
+## Endpoint
+
+```
+DELETE /v1/public/checks/{id}
+```
+
+## Path Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | string | The unique check identifier |
+
+## Response
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "success": true
+  }
+}
+```
+
+## Error Responses
+
+| Status | Description |
+|---|---|
+| 403 | API key missing `checks:delete` scope, or check belongs to another user |
+| 404 | Check not found |
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -X DELETE \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/CHECK_ID"
+```
+
+### JavaScript
+
+```javascript
+const checkId = "CHECK_ID";
+const response = await fetch(
+  `https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/${checkId}`,
+  {
+    method: "DELETE",
+    headers: {
+      "X-Api-Key": process.env.EXIT1_API_KEY,
+    },
+  }
+);
+const data = await response.json();
+console.log(data);
+```
+
+### Python
+
+```python
+import os, requests
+
+check_id = "CHECK_ID"
+response = requests.delete(
+    f"https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/{check_id}",
+    headers={"X-Api-Key": os.environ["EXIT1_API_KEY"]},
+)
+response.raise_for_status()
+print(response.json())
+```

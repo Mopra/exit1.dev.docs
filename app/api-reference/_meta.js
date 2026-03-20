@@ -1,10 +1,15 @@
 export default {
   index: "Overview",
   authentication: "Authentication",
+  scopes: "Scopes",
   "rate-limits": "Rate Limits",
   errors: "Errors",
   "list-checks": "List Checks",
   "get-check": "Get Check",
   "check-history": "Check History",
   "check-stats": "Check Stats",
+  "create-check": "Create Check",
+  "update-check": "Update Check",
+  "delete-check": "Delete Check",
+  "toggle-check": "Toggle Check",
 };

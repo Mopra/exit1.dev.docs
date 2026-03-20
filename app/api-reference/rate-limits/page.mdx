@@ -2,7 +2,7 @@
 
 The exit1.dev API enforces rate limits to ensure fair usage and platform stability.
 
-## Limits
+## Read Limits
 
 | Scope | Limit |
 |---|---|
@@ -11,6 +11,26 @@ The exit1.dev API enforces rate limits to ensure fair usage and platform stabili
 | Per endpoint (per key) | 1 request/minute |
 | Daily per key | 500 requests |
 | Daily per user | 2,000 requests |
+
+## Write Limits
+
+Write endpoints (`POST`, `PATCH`, `DELETE`) have additional rate limits on top of the read limits:
+
+| Scope | Limit |
+|---|---|
+| Per API key | 2 write requests/minute |
+| Daily per key | 100 write requests/day |
+| Daily per user | 300 write requests/day |
+
+### Check Creation Limits
+
+Creating checks is further limited to prevent abuse:
+
+| Scope | Limit |
+|---|---|
+| Per minute | 5 checks |
+| Per hour | 20 checks |
+| Per day | 50 checks |
 
 ## Rate Limit Headers
 
@@ -28,11 +48,8 @@ When you exceed a rate limit, the API returns a `429 Too Many Requests` response
 
 ```json
 {
-  "error": {
-    "code": 429,
-    "message": "Rate limit exceeded. Please retry after the reset time.",
-    "retryAfter": 60
-  }
+  "error": "Rate limit exceeded. Please retry after the reset time.",
+  "retryAfter": 60
 }
 ```
 
@@ -45,3 +62,4 @@ The `retryAfter` field indicates how many seconds to wait before making another 
 - Monitor the `X-RateLimit-Remaining` header to stay within limits
 - Spread requests evenly over time rather than bursting
 - Use cursor-based pagination to reduce the number of requests needed
+- Use idempotency keys when retrying failed create requests

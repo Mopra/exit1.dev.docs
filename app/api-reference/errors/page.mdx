@@ -7,11 +7,14 @@ The exit1.dev API uses standard HTTP status codes and returns structured error r
 | Code | Meaning | Description |
 |---|---|---|
 | 200 | OK | Request succeeded |
-| 400 | Bad Request | Invalid request parameters |
+| 201 | Created | Resource created successfully (POST) |
+| 400 | Bad Request | Invalid request parameters or body |
 | 401 | Unauthorized | Missing or invalid API key |
-| 403 | Forbidden | Access denied for this resource |
+| 403 | Forbidden | Access denied — missing [scope](/api-reference/scopes) or resource not owned |
 | 404 | Not Found | Resource not found |
-| 405 | Method Not Allowed | HTTP method not supported (only GET is allowed) |
+| 405 | Method Not Allowed | HTTP method not supported for this endpoint |
+| 409 | Conflict | Duplicate resource (e.g., URL already monitored) or plan limit reached |
+| 422 | Unprocessable | Idempotency key conflict (same key used for a different request) |
 | 429 | Too Many Requests | Rate limit exceeded |
 | 500 | Internal Server Error | Server-side error |
 
@@ -21,10 +24,7 @@ All error responses follow this structure:
 
 ```json
 {
-  "error": {
-    "code": 400,
-    "message": "Invalid parameter: limit must be between 1 and 100"
-  }
+  "error": "Invalid parameter: limit must be between 1 and 100"
 }
 ```
 
@@ -34,10 +34,7 @@ All error responses follow this structure:
 
 ```json
 {
-  "error": {
-    "code": 401,
-    "message": "Invalid or missing API key"
-  }
+  "error": "Invalid or missing API key"
 }
 ```
 
@@ -50,25 +47,19 @@ All error responses follow this structure:
 
 ```json
 {
-  "error": {
-    "code": 403,
-    "message": "Access denied"
-  }
+  "error": "API key does not have the required scope: checks:write"
 }
 ```
 
 **Causes:**
-- Invalid permissions for the requested resource
-- API key does not have access to the requested check
+- API key missing required [scope](/api-reference/scopes) for the operation
+- Attempting to access a check owned by a different account
 
 ### 404 Not Found
 
 ```json
 {
-  "error": {
-    "code": 404,
-    "message": "Check not found"
-  }
+  "error": "Check not found"
 }
 ```
 
@@ -76,15 +67,34 @@ All error responses follow this structure:
 - The check ID does not exist
 - The check belongs to a different account
 
+### 409 Conflict
+
+```json
+{
+  "error": "A check already exists for this URL"
+}
+```
+
+**Causes:**
+- Duplicate URL when creating or updating a check
+- Maximum check limit reached for your plan
+
+### 422 Unprocessable
+
+```json
+{
+  "error": "Idempotency key previously used for a different request"
+}
+```
+
+**Cause:** The same `Idempotency-Key` was used with a different HTTP method or path. Use a new key for each distinct request.
+
 ### 429 Too Many Requests
 
 ```json
 {
-  "error": {
-    "code": 429,
-    "message": "Rate limit exceeded. Please retry after the reset time.",
-    "retryAfter": 60
-  }
+  "error": "Rate limit exceeded. Please retry after the reset time.",
+  "retryAfter": 60
 }
 ```
 

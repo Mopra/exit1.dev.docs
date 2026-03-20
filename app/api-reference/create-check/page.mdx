@@ -1,0 +1,137 @@
+# Create Check
+
+Create a new monitoring check.
+
+**Required scope:** `checks:write`
+
+## Endpoint
+
+```
+POST /v1/public/checks
+```
+
+## Headers
+
+| Header | Required | Description |
+|---|---|---|
+| `X-Api-Key` | Yes | Your API key |
+| `Content-Type` | Yes | Must be `application/json` |
+| `Idempotency-Key` | Yes | Unique string to prevent duplicate creation (max 256 characters) |
+
+## Request Body
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `url` | string | Yes | The URL to monitor |
+| `name` | string | No | Display name (max 200 characters, defaults to URL) |
+| `type` | string | No | Check type: `website`, `rest_endpoint`, `ping`, `tcp`, `udp`, `dns`, `smtp`, `pop3`, `imap` (default: `website`) |
+| `checkFrequency` | number | No | Check interval in minutes (default: 5, subject to plan limits) |
+| `checkRegionOverride` | string | No | Region to run checks from. Currently only `vps-eu-1` is available |
+| `httpMethod` | string | No | HTTP method for `website` and `rest_endpoint` types: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` (default: `GET`) |
+| `expectedStatusCodes` | number[] | No | Expected HTTP status codes (default: `[200]`) |
+| `requestHeaders` | object | No | Custom request headers as key-value pairs (max 20 entries) |
+| `requestBody` | string | No | Request body for POST/PUT/PATCH methods (max 64KB, must be valid JSON) |
+| `responseValidation` | object | No | Response validation rules (see below) |
+| `cacheControlNoCache` | boolean | No | Send `Cache-Control: no-cache` header (default: `false`) |
+| `immediateRecheckEnabled` | boolean | No | Enable immediate recheck on failure (default: `true`) |
+| `responseTimeLimit` | number | No | Max response time in milliseconds before marking as slow |
+| `downConfirmationAttempts` | number | No | Number of consecutive failures before marking as down (1-99) |
+| `pingPackets` | number | No | Number of ping packets for `ping` type checks (1-5) |
+| `timezone` | string | No | Timezone for the check (e.g., `America/New_York`) |
+
+### Response Validation
+
+The `responseValidation` object supports:
+
+| Field | Type | Description |
+|---|---|---|
+| `containsText` | string[] | Array of strings that must appear in the response body |
+| `jsonPath` | string | JSONPath expression to evaluate |
+| `expectedValue` | string | Expected value at the JSONPath location |
+
+## Idempotency
+
+The `Idempotency-Key` header is **required** for create requests. If you send the same idempotency key within 24 hours, the API returns the original response instead of creating a duplicate check.
+
+Use any unique string (e.g., a UUID or timestamp). Increment it for each new check you want to create.
+
+## Response
+
+**201 Created**
+
+```json
+{
+  "data": {
+    "id": "abc123def456"
+  }
+}
+```
+
+## Error Responses
+
+| Status | Description |
+|---|---|
+| 400 | Invalid request body or validation failure |
+| 403 | API key missing `checks:write` scope |
+| 409 | A check already exists for this URL, or max checks reached |
+| 422 | Idempotency key conflict (same key, different request) |
+| 429 | Rate limit exceeded |
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -X POST \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: unique-key-001" \
+  -d '{"url": "https://example.com", "name": "My Website", "type": "website", "checkFrequency": 5}' \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks"
+```
+
+### JavaScript
+
+```javascript
+const response = await fetch(
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks",
+  {
+    method: "POST",
+    headers: {
+      "X-Api-Key": process.env.EXIT1_API_KEY,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `create-${Date.now()}`,
+    },
+    body: JSON.stringify({
+      url: "https://example.com",
+      name: "My Website",
+      type: "website",
+      checkFrequency: 5,
+    }),
+  }
+);
+const data = await response.json();
+console.log(data.data.id); // New check ID
+```
+
+### Python
+
+```python
+import os, requests
+
+response = requests.post(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks",
+    headers={
+        "X-Api-Key": os.environ["EXIT1_API_KEY"],
+        "Idempotency-Key": "unique-key-001",
+    },
+    json={
+        "url": "https://example.com",
+        "name": "My Website",
+        "type": "website",
+        "checkFrequency": 5,
+    },
+)
+response.raise_for_status()
+print(response.json())
+```

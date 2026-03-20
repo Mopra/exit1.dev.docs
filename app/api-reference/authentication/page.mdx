@@ -8,7 +8,8 @@ The exit1.dev API uses API keys for authentication.
 
 1. Navigate to **Settings** > **API**
 2. Click **Create API Key**
-3. Copy the generated key immediately (it won't be shown again)
+3. Select the [scopes](/api-reference/scopes) you need (read, write, delete)
+4. Copy the generated key immediately (it won't be shown again)
 
 You can create up to **2 API keys** per account.
 
@@ -35,6 +36,16 @@ curl -H "X-Api-Key: ek_live_your_key_here" \
   https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks
 ```
 
+### Scopes
+
+API keys support three scopes that control what operations the key can perform:
+
+- **`checks:read`** - Read checks, history, and stats (default)
+- **`checks:write`** - Create, update, and toggle checks
+- **`checks:delete`** - Delete checks
+
+Keys created without specifying scopes default to read-only. See the [Scopes](/api-reference/scopes) page for details.
+
 ### Revoking a Key
 
 To revoke an API key:
@@ -52,3 +63,4 @@ Revoked keys are immediately invalidated. Any requests using a revoked key will 
 - Rotate keys periodically
 - Revoke unused keys immediately
 - Each key has independent rate limits
+- Only grant the scopes your integration actually needs

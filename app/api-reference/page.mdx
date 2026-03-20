@@ -1,6 +1,6 @@
 # API Reference
 
-The exit1.dev API provides programmatic access to your monitoring data.
+The exit1.dev API provides programmatic access to your monitoring checks, history, and statistics.
 
 > **Note:** API access is available on all plans.
 
@@ -16,10 +16,12 @@ https://us-central1-exit1-dev.cloudfunctions.net/publicApi
 
 - **REST architecture** - Resources are accessed via standard HTTP methods
 - **JSON responses** - All responses are returned in JSON format
-- **GET-only** - The current API version only supports read operations
 - **API versioning** - All endpoints are prefixed with `/v1/`
+- **Scoped access** - Write and delete operations require [API key scopes](/api-reference/scopes)
 
 ## Available Endpoints
+
+### Read Endpoints
 
 | Endpoint | Description |
 |---|---|
@@ -28,9 +30,18 @@ https://us-central1-exit1-dev.cloudfunctions.net/publicApi
 | `GET /v1/public/checks/{id}/history` | [Get check history](/api-reference/check-history) |
 | `GET /v1/public/checks/{id}/stats` | [Get uptime statistics](/api-reference/check-stats) |
 
+### Write Endpoints
+
+| Endpoint | Scope Required | Description |
+|---|---|---|
+| `POST /v1/public/checks` | `checks:write` | [Create a new check](/api-reference/create-check) |
+| `PATCH /v1/public/checks/{id}` | `checks:write` | [Update an existing check](/api-reference/update-check) |
+| `DELETE /v1/public/checks/{id}` | `checks:delete` | [Delete a check](/api-reference/delete-check) |
+| `POST /v1/public/checks/{id}/toggle` | `checks:write` | [Enable or disable a check](/api-reference/toggle-check) |
+
 ## Quick Start
 
-1. [Create an API key](/api-reference/authentication)
+1. [Create an API key](/api-reference/authentication) with the appropriate [scopes](/api-reference/scopes)
 2. Include the key in the `X-Api-Key` header
 3. Make your first request:
 
@@ -42,5 +53,6 @@ curl -H "X-Api-Key: ek_live_your_api_key_here" \
 ## Related
 
 - [Authentication](/api-reference/authentication) - API key setup
+- [Scopes](/api-reference/scopes) - API key permissions
 - [Rate Limits](/api-reference/rate-limits) - Request quotas
 - [Errors](/api-reference/errors) - Error response format
