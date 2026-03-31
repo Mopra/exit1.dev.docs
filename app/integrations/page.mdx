@@ -4,6 +4,11 @@ Connect exit1.dev with your existing tools and workflows.
 
 ## Available Integrations
 
+### MCP (AI Assistants)
+Connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf. Query your monitoring data conversationally — ask about uptime, check failures, and response times in natural language. Requires the Nano plan.
+
+[Set up MCP](/integrations/mcp)
+
 ### Webhooks
 Send check events to any HTTP endpoint. Use webhooks to integrate with incident management tools, custom dashboards, or internal systems.
 
@@ -26,10 +31,12 @@ Receive monitoring alerts in your Microsoft Teams channels as Adaptive Cards. Ge
 
 ## Integration Comparison
 
-| Feature | Webhooks | Slack | Discord | Teams |
-|---|---|---|---|---|
-| Real-time alerts | Yes | Yes | Yes | Yes |
-| Custom payload | Yes | No | No | No |
-| Retry on failure | Yes (8 attempts) | Yes | Yes | Yes |
-| Health monitoring | Yes | No | No | No |
-| Max per account | 5 | 1 | 1 | 1 |
+| Feature | MCP | Webhooks | Slack | Discord | Teams |
+|---|---|---|---|---|---|
+| Real-time alerts | No | Yes | Yes | Yes | Yes |
+| Query monitoring data | Yes | No | No | No | No |
+| Custom payload | No | Yes | No | No | No |
+| Retry on failure | N/A | Yes (8 attempts) | Yes | Yes | Yes |
+| Health monitoring | No | Yes | No | No | No |
+| AI assistant support | Yes | No | No | No | No |
+| Plan required | Nano | Free | Free | Free | Free |

@@ -1,0 +1,162 @@
+# MCP Integration (AI Assistants)
+
+Connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf using the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). Ask questions about your monitoring data in natural language — no dashboards required.
+
+**Available on the Nano plan and above.**
+
+## Requirements
+
+- Exit1 account on the **Nano** or **Scale** plan
+- An API key with `checks:read` scope
+- Node.js 18+ installed
+
+## Setup
+
+### Step 1: Create an API Key
+
+1. Log in to [app.exit1.dev](https://app.exit1.dev)
+2. Go to **Settings** > **API Keys**
+3. Click **Create API Key**
+4. Name it (e.g. "Claude MCP")
+5. Select the `checks:read` scope
+6. Copy the key — you'll need it in the next step
+
+### Step 2: Connect Your AI Assistant
+
+#### Claude Desktop
+
+1. Open Claude Desktop
+2. Click the menu in the top-left
+3. Go to **Settings** > **Developer** > **Edit Config**
+4. Add the following to your config:
+
+```json
+{
+  "mcpServers": {
+    "exit1": {
+      "command": "npx",
+      "args": ["-y", "exit1-mcp"],
+      "env": {
+        "EXIT1_API_KEY": "ek_live_your_key_here"
+      }
+    }
+  }
+}
+```
+
+5. Replace `ek_live_your_key_here` with your actual API key
+6. Save the file and restart Claude Desktop
+
+#### Claude Code
+
+Run in your terminal:
+
+```bash
+claude mcp add exit1 -- npx -y exit1-mcp
+```
+
+Then add `EXIT1_API_KEY` to your shell environment:
+
+```bash
+# macOS / Linux — add to ~/.bashrc or ~/.zshrc
+export EXIT1_API_KEY="ek_live_your_key_here"
+
+# Windows — run in PowerShell
+[System.Environment]::SetEnvironmentVariable("EXIT1_API_KEY", "ek_live_your_key_here", "User")
+```
+
+#### Cursor
+
+Add to `.cursor/mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "exit1": {
+      "command": "npx",
+      "args": ["-y", "exit1-mcp"],
+      "env": {
+        "EXIT1_API_KEY": "ek_live_your_key_here"
+      }
+    }
+  }
+}
+```
+
+#### Windsurf
+
+Add to your Windsurf MCP config (Settings > MCP):
+
+```json
+{
+  "mcpServers": {
+    "exit1": {
+      "command": "npx",
+      "args": ["-y", "exit1-mcp"],
+      "env": {
+        "EXIT1_API_KEY": "ek_live_your_key_here"
+      }
+    }
+  }
+}
+```
+
+### Step 3: Start Asking Questions
+
+Once connected, you can ask your AI assistant things like:
+
+- **"Are any of my monitors down?"** — lists all checks and their status
+- **"What's the uptime for my API check over the last 30 days?"** — shows uptime %, response times
+- **"Show me the last 10 failures for production"** — fetches recent errors from history
+- **"Compare response times this week vs last week"** — multi-range stats comparison
+- **"What does my status page show right now?"** — current status page snapshot
+
+## Available Tools
+
+The MCP server provides 5 read-only tools:
+
+| Tool | What it does |
+|------|-------------|
+| `list_checks` | List all checks with current status. Filter by online, offline, or unknown. |
+| `get_check` | Get details for a specific check — status, response time, SSL info, maintenance windows. |
+| `get_check_history` | Get historical results with timestamps, status codes, and errors. |
+| `get_check_stats` | Get uptime %, average/min/max response time over time ranges (1h, 1d, 7d, 30d, etc.). |
+| `get_status_page` | Get the current snapshot of a public status page. |
+
+## Supported AI Assistants
+
+| Assistant | Config location |
+|-----------|----------------|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows) |
+| Claude Code | Via `claude mcp add` CLI command |
+| Cursor | `.cursor/mcp.json` in your project root |
+| Windsurf | Settings > MCP in the Windsurf UI |
+
+## Rate Limits
+
+The MCP server uses your API key's rate limits:
+
+| Limit | Value |
+|-------|-------|
+| Per API key | 5 requests/min |
+| Daily per key | 500 requests/day |
+| Daily per user | 2,000 requests/day |
+
+Normal AI conversations use 2–5 tool calls, so you're unlikely to hit these limits in typical usage.
+
+## Troubleshooting
+
+**"EXIT1_API_KEY environment variable is required"**
+Your API key isn't set. Double-check the `env` block in your config and make sure the key is correct.
+
+**"API error 401: Unauthorized"**
+Your API key is invalid or has been revoked. Create a new one in the Exit1 dashboard.
+
+**"API error 429: Rate limit exceeded"**
+You've hit the API rate limit (5 requests/minute per key). Wait a moment and try again.
+
+**MCP server not showing up in Claude Desktop**
+Make sure you restarted Claude Desktop after editing the config. Check that Node.js 18+ is installed (`node --version`).
+
+**NPM package not found**
+Run `npx -y exit1-mcp` manually in your terminal to verify it installs correctly. If behind a corporate proxy, configure npm's proxy settings.
