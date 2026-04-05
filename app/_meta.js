@@ -1,8 +1,6 @@
 export default {
   index: {
     title: "Home",
-    type: "page",
-    display: "hidden",
   },
   "getting-started": { title: "Getting Started" },
   monitoring: { title: "Monitoring" },
