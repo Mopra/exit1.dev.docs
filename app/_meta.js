@@ -7,6 +7,7 @@ export default {
   "domain-intelligence": { title: "Domain Intelligence" },
   alerting: { title: "Alerting" },
   "status-pages": { title: "Status Pages" },
+  badges: { title: "Badges" },
   analytics: { title: "Analytics" },
   "api-reference": { title: "API Reference" },
   integrations: { title: "Integrations" },

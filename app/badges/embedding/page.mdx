@@ -1,0 +1,58 @@
+# Embedding Badges
+
+Badges can be embedded using three formats: Script, HTML, or Markdown. Each format produces the same badge — choose the one that fits your target platform.
+
+## Script Embed
+
+The simplest option. Paste the script tag and it auto-injects the badge image.
+
+```html
+<script src="https://app.exit1.dev/v1/badge/{checkId}/embed.js?type=status&branding=true"></script>
+```
+
+The script creates an `<img>` wrapped in a link, inserted before the script tag. Works on any webpage.
+
+## HTML Embed
+
+Use a standard image tag for full control over placement and styling.
+
+```html
+<a href="https://exit1.dev">
+  <img src="https://app.exit1.dev/v1/badge/{checkId}?type=status" alt="Service status" />
+</a>
+```
+
+Replace `{checkId}` with your check's ID and `type` with `status`, `uptime`, or `response`.
+
+## Markdown Embed
+
+For GitHub READMEs, wikis, and any Markdown-rendered documentation.
+
+```markdown
+[![Service status](https://app.exit1.dev/v1/badge/{checkId}?type=status)](https://exit1.dev)
+```
+
+## Finding Your Check ID
+
+1. Open the check in your exit1.dev dashboard
+2. Scroll to the **Badge Embed** section
+3. The embed snippets include your check ID automatically — just copy and paste
+
+## Multiple Badges
+
+You can display all three badge types side by side:
+
+```markdown
+[![Status](https://app.exit1.dev/v1/badge/{checkId}?type=status)](https://exit1.dev)
+[![Uptime](https://app.exit1.dev/v1/badge/{checkId}?type=uptime)](https://exit1.dev)
+[![Response](https://app.exit1.dev/v1/badge/{checkId}?type=response)](https://exit1.dev)
+```
+
+## Query Parameters
+
+| Parameter | Values | Default | Description |
+|---|---|---|---|
+| `type` | `status`, `uptime`, `response` | `status` | Badge type to display |
+| `branding` | `true`, `false` | `true` | Show or hide the exit1.dev footer |
+
+The `branding=false` parameter only works for Nano and Scale plan users. Free plan badges always include branding.

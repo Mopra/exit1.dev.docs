@@ -1,0 +1,60 @@
+# Badges
+
+Embeddable badges let you display real-time status, uptime percentage, and response time for any monitored check — directly in your README, documentation, or website.
+
+## Overview
+
+| Feature | Free Plan | Nano Plan | Scale Plan |
+|---|---|---|---|
+| Status Badges | All types | All types | All types |
+| Uptime Badges | All types | All types | All types |
+| Response Time Badges | All types | All types | All types |
+| Remove Branding | Not available | Yes | Yes |
+
+## Badge Types
+
+### Status
+
+Shows the real-time state of a check.
+
+- **Online** — green badge
+- **Offline** — red badge
+- **Maintenance** — amber badge
+- **Paused** — gray badge
+- **Unknown** — gray badge (check deleted or invalid)
+
+### Uptime
+
+Shows the 30-day uptime percentage calculated from daily summaries.
+
+- **99%+** — green badge
+- **95%–99%** — amber badge
+- **Below 95%** — red badge
+
+### Response Time
+
+Shows the last recorded response time in milliseconds. Always displayed with a blue badge.
+
+## How Badges Work
+
+1. You select a check in your dashboard and open the **Badge Embed** section
+2. Choose a badge type (Status, Uptime, or Response Time)
+3. Choose an embed format (Script, HTML, or Markdown)
+4. Copy the snippet and paste it where you need it
+5. The badge auto-updates every 5 minutes via server-side caching
+
+## API Endpoint
+
+```
+GET https://app.exit1.dev/v1/badge/{checkId}?type=status|uptime|response&branding=true|false
+```
+
+- Returns `image/svg+xml`
+- Cached for 5 minutes (`Cache-Control: public, max-age=300`)
+- Rate limited to 60 requests/minute per IP
+- Invalid or deleted check IDs return a gray "unknown" badge (never a 404)
+
+## Getting Started
+
+1. [Embed a badge](/badges/embedding)
+2. [Customize appearance](/badges/customization)

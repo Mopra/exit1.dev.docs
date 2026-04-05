@@ -1,0 +1,43 @@
+# Customization
+
+## Branding
+
+By default, badges include a small exit1.dev footer below the badge. Nano and Scale plan users can remove this for a clean, white-label look.
+
+### Removing Branding
+
+**In the dashboard:** Toggle off the branding switch in the Badge Embed section.
+
+**In the URL:** Add `&branding=false` to the badge URL:
+
+```
+https://app.exit1.dev/v1/badge/{checkId}?type=status&branding=false
+```
+
+Free plan users will always see branding regardless of this parameter.
+
+## Badge Appearance
+
+Badges are rendered as SVGs with the following properties:
+
+- **Height:** 24px (plus 18px footer if branding is enabled)
+- **Width:** Dynamic, based on text length
+- **Font:** Inter / system-ui at 11px
+- **Style:** Subtle vertical gradient for depth
+
+### Color Reference
+
+| State | Color |
+|---|---|
+| Online / 99%+ uptime | Green (`#22c55e`) |
+| Offline / Below 95% uptime | Red (`#ef4444`) |
+| Maintenance / 95–99% uptime | Amber (`#f59e0b`) |
+| Response time | Blue (`#3b82f6`) |
+| Paused / Unknown | Gray (`#71717a`) |
+| Label background | Dark gray (`#3f3f46`) |
+
+## Caching
+
+Badge responses are cached for 5 minutes (`Cache-Control: public, max-age=300, s-maxage=300`). Error responses cache for 1 minute.
+
+This means changes to your check status may take up to 5 minutes to reflect in the badge. This is intentional to ensure fast delivery and prevent excessive load on the monitoring infrastructure.
