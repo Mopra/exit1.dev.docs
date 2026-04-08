@@ -1,5 +1,9 @@
 # exit1.dev
 
+[![Status](https://app.exit1.dev/v1/badge/gBLfWCos41mGcJ62aIpX?type=status)](https://exit1.dev)
+[![Uptime](https://app.exit1.dev/v1/badge/gBLfWCos41mGcJ62aIpX?type=uptime)](https://exit1.dev)
+[![Response](https://app.exit1.dev/v1/badge/gBLfWCos41mGcJ62aIpX?type=response)](https://exit1.dev)
+
 **Website monitoring that doesn't get in your way.**
 
 exit1 is an uptime monitoring platform built for developers and teams who need reliable visibility into their infrastructure. It watches your websites, APIs, SSL certificates, and TCP/UDP services around the clock — and alerts you the moment something goes wrong.
