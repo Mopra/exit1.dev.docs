@@ -1,6 +1,6 @@
 # exit1.dev
 
-> exit1.dev is a website uptime monitoring platform for developers and teams. It provides HTTP/HTTPS, API, and TCP/UDP monitoring from multiple global regions, SSL certificate tracking, domain expiration alerts, customizable status pages, multi-channel alerting (email, SMS, Slack, Discord, Teams, webhooks), and a read-only REST API. Plans: Free (50 monitors, 5-min intervals) and Nano ($3/mo, unlimited monitors, 1-min intervals).
+> exit1.dev is a website uptime monitoring platform for developers and teams. It provides HTTP/HTTPS, API, and TCP/UDP monitoring from multiple global regions, SSL certificate tracking, domain expiration alerts, customizable status pages, multi-channel alerting (email, SMS, Slack, Discord, Teams, webhooks), and a read-only REST API. Plans: Free (50 monitors, 5-min intervals) and Nano ($5/mo, unlimited monitors, 1-min intervals).
 
 - [Website](https://exit1.dev)
 - [Dashboard](https://app.exit1.dev)
