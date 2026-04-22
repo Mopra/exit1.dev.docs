@@ -3,18 +3,18 @@
 ## General
 
 ### What happens if I exceed my monitor limit?
-You cannot create new monitors beyond your plan limit (10 on Free). Existing checks continue to run. Upgrade to the Nano plan for unlimited monitors.
+You cannot create new monitors beyond your plan limit (10 on Free, 50 on Nano, 500 on Pro, 1,000 on Agency). Existing checks continue to run. Upgrade to the next tier for more capacity.
 
 ### Can I change my plan at any time?
 Yes. Upgrades take effect immediately. Downgrades take effect at the end of your current billing period.
 
-### Is there a free trial of the Nano plan?
+### Is there a free trial of the paid plans?
 The Free plan serves as a trial. You can use it indefinitely and upgrade when you need more capacity.
 
 ## Monitoring
 
 ### How accurate are the uptime calculations?
-Uptime is calculated based on every check execution. With 1-minute intervals on the Nano plan, you get 1,440 data points per day for highly accurate uptime tracking.
+Uptime is calculated based on every check execution. Higher tiers check more frequently — Nano runs every 2 minutes (720 data points/day), Pro every 30 seconds (2,880/day), Agency every 15 seconds (5,760/day).
 
 ### What happens during a network outage at the monitoring region?
 If a monitoring region experiences issues, checks may be delayed. exit1.dev runs from Google Cloud infrastructure for high availability.
@@ -51,7 +51,7 @@ Contact support within 14 days of a charge for a refund evaluation.
 Yes. exit1.dev offers both monthly and annual billing. Save 25% with annual billing.
 
 ### What happens if my payment fails?
-Your account continues on the Nano plan for a grace period. If payment is not resolved, your account is downgraded to the Free plan.
+Your account continues on your current plan for a grace period. If payment is not resolved, your account is downgraded to the Free plan.
 
 ## MCP (AI Assistants)
 
@@ -59,7 +59,7 @@ Your account continues on the Nano plan for a grace period. If payment is not re
 MCP (Model Context Protocol) lets you connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf. Once connected, you can ask questions about your monitoring data in natural language — check uptime, review failures, compare response times, and more.
 
 ### Which plans include MCP?
-MCP is available on the **Nano** plan and above. Free plan users can upgrade to Nano ($5/month) to access it.
+MCP is available on the **Pro** plan and above. MCP access follows API access, so you'll need API keys — 10 on Pro, 25 on Agency.
 
 ### Which AI assistants are supported?
 Claude Desktop, Claude Code, Cursor, and Windsurf. Any AI tool that supports the Model Context Protocol can connect.
@@ -70,7 +70,7 @@ MCP uses your existing API key rate limits: 5 requests/minute per key, 500 reque
 ## API
 
 ### How do I get an API key?
-Navigate to **Settings** > **API** and click **Create API Key**. API access is available on all plans.
+Navigate to **Settings** > **API** and click **Create API Key**. API access requires the Pro plan or above (10 keys on Pro, 25 on Agency).
 
 ### Can I create or modify checks via the API?
 The current API is read-only. You can retrieve check data, history, and statistics. Check management via API is planned for a future release.

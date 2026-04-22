@@ -1,78 +1,98 @@
 # Plans & Pricing
 
-exit1.dev offers two plans to fit your monitoring needs.
+exit1.dev offers four plans. Pick the one that fits your monitoring needs — upgrade or downgrade anytime.
 
 ## Plan Comparison
 
-| Feature | Free | Nano |
-|---|---|---|
-| **Price** | $0/month | $5/month (billed annually) |
-| **Monitors** | 10 | Unlimited |
-| **Check Interval** | 5 minutes | 1 minute |
-| **Multi-Region Checks** | No | Yes |
-| **Status Pages** | 1 | Unlimited |
-| **Status Page Builder** | No | Drag & drop |
-| **Email Alerts** | 10/hr, 10/mo | 1,000/mo |
-| **SMS Alerts** | No | Yes (20/mo) |
-| **Team Alerts** | No | Yes |
-| **Webhook Integrations** | 1 | Unlimited |
-| **Slack Integration** | Yes | Yes |
-| **Discord Integration** | Yes | Yes |
-| **Domain Intelligence** | No | Yes |
-| **Domain Expiry Alerts** | No | Yes |
-| **MCP (AI Assistants)** | No | Yes |
-| **API Access** | Yes | Yes |
-| **SSL Monitoring** | Yes | Yes |
-| **Response Validation** | Yes | Yes |
-| **Bulk Import** | Yes | Yes |
-| **Bulk Edit** | Yes | Yes |
-| **Data Retention** | 30 days | 1 year (365 days) |
-| **Priority Support** | No | Yes |
+| Feature | Free | Nano | Pro | Agency |
+|---|---|---|---|---|
+| **Monthly price** | $0 | $9 | $24 | $49 |
+| **Annual price** | — | $84 ($7/mo) | $240 ($20/mo) | $444 ($37/mo) |
+| **Monitors** | 10 | 50 | 500 | 1,000 |
+| **Min check interval** | 5 min | 2 min | 30 sec | 15 sec |
+| **Multi-region checks** | No | Yes | Yes | Yes |
+| **Status pages** | 1 | 5 | 25 | 50 |
+| **Status page builder** (branding, layout, widgets) | No | Yes | Yes | Yes |
+| **Email alerts** | 10/hr, 10/mo | 50/hr, 1,000/mo | 500/hr, 10,000/mo | 1,000/hr, 50,000/mo |
+| **SMS alerts** | No | No | 25/hr, 50/mo | 50/hr, 100/mo |
+| **Webhooks** | 1 | 5 | 25 | 50 |
+| **Slack / Discord / Teams** | No | No | Yes | Yes |
+| **Domain Intelligence** (WHOIS, expiry, DNS) | No | Yes | Yes | Yes |
+| **Maintenance mode** | No | Yes | Yes | Yes |
+| **API access + MCP** | No | No | Yes (10 keys) | Yes (25 keys) |
+| **CSV bulk export** | No | No | Yes | Yes |
+| **SSL monitoring** | Yes | Yes | Yes | Yes |
+| **Response validation** | Yes | Yes | Yes | Yes |
+| **Bulk import / edit** | Yes | Yes | Yes | Yes |
+| **Data retention** | 60 days | 60 days | 365 days | 1,095 days (3 yr) |
+| **Team seats** 🕐 | — | — | — | 10 |
+| **SLA reporting** 🕐 | No | No | No | Yes |
+| **Custom status domain** 🕐 | No | No | No | Yes |
 
-## Free Plan
+🕐 Coming soon — feature flagged on Agency but not yet generally available.
 
-The Free plan is ideal for individuals and small projects that need basic monitoring:
+Save 25% with annual billing on any paid plan.
 
-- Monitor up to 10 endpoints
-- 5-minute check intervals
-- Email alerting (10/hour, 10/month)
+## Free
+
+Good for individuals and small side projects.
+
+- 10 monitors, 5-minute intervals
+- Email alerts (10/hr, 10/mo)
 - 1 webhook integration
 - 1 public status page
 - SSL certificate monitoring
-- API access
-- Analytics & logs (30 days)
+- 60 days of history
 - Bulk import and bulk edit
 
-## Nano Plan
+## Nano — $9/mo
 
-The Nano plan is designed for professionals and growing teams:
+For hobbyists and small sites that need faster checks and a proper status page.
 
-- Unlimited monitors
-- 1-minute check intervals
-- Multi-region checks
-- SMS alerts and team alerts
-- Higher alert budgets (1,000 emails and 20 SMS per month)
-- Unlimited webhook integrations
-- Unlimited status pages with custom drag & drop builder
-- Domain intelligence and domain expiry alerts
-- MCP integration (AI assistants: Claude, Cursor, Windsurf)
-- 1 year data retention (365 days)
-- Priority support
+- 50 monitors, 2-minute intervals
+- Email alerts (50/hr, 1,000/mo)
+- 5 webhook integrations
+- 5 status pages with the drag-and-drop builder
+- Domain Intelligence (WHOIS, expiry, DNS)
+- Maintenance mode
+- 60 days of history
+
+## Pro — $24/mo
+
+For teams that need real incident response — fast checks, SMS, team channels, and API access.
+
+- 500 monitors, 30-second intervals
+- Email alerts (500/hr, 10,000/mo) + SMS alerts (25/hr, 50/mo)
+- 25 webhook integrations
+- Slack, Discord, and Microsoft Teams alert channels
+- 25 status pages
+- 10 API keys with MCP (AI assistant) access
+- CSV bulk export
+- 365 days of history
+
+## Agency — $49/mo
+
+For agencies and operators managing monitoring at scale.
+
+- 1,000 monitors, 15-second intervals
+- Email alerts (1,000/hr, 50,000/mo) + SMS alerts (50/hr, 100/mo)
+- 50 webhook integrations
+- 50 status pages
+- 25 API keys with MCP access
+- CSV bulk export
+- 1,095 days (3 years) of history
+- Coming soon: 10 team seats, SLA reporting, custom status page domain
 
 ## Upgrading
 
-To upgrade from Free to Nano:
-
 1. Navigate to **Settings** > **Billing**
-2. Click **Upgrade to Nano**
+2. Click **Change Plan** and pick a tier
 3. Enter your payment information
 4. Your account is upgraded immediately
 
 ## Downgrading
 
-To downgrade from Nano to Free:
-
 1. Navigate to **Settings** > **Billing**
-2. Click **Change Plan** > **Free**
+2. Click **Change Plan** and pick a lower tier
 3. Your plan changes at the end of the current billing period
-4. Checks and status pages exceeding Free plan limits will be paused
+4. Resources above the new tier's limits are paused: checks beyond the monitor cap, extra webhooks, extra status pages, and — when leaving Pro or Agency — API keys and SMS alerts
