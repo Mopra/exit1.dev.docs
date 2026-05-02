@@ -4,4 +4,5 @@ export default {
   "sms-alerts": "SMS Alerts",
   "webhook-alerts": "Webhook Alerts",
   "alert-events": "Alert Events",
+  "peer-confirmation": "Peer Confirmation",
 };

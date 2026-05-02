@@ -1,0 +1,50 @@
+# Peer Confirmation
+
+exit1 runs every check from a primary region (Frankfurt or Boston). When a check fails, the primary region asks the **peer region** to probe the same target. Your check is only marked DOWN if both regions agree.
+
+This eliminates false alerts caused by transient network issues that affect only one region — the most common source of noise in single-region uptime monitoring.
+
+## How it works
+
+1. The primary region runs your check on its normal schedule.
+2. If the check **succeeds**, nothing else happens — the peer is never consulted on healthy probes.
+3. If the check **fails**, the primary asks the peer region to probe the same URL/host.
+4. **If the peer also reports DOWN**, the failure counts toward your alert threshold (3 consecutive failures within 5 minutes).
+5. **If the peer reports UP**, the failure is ignored — most likely a transient network issue between the primary region and your service.
+6. **If the peer can't be reached** (timeout, network issue, etc.), the check falls back to the original time-based confirmation. Behavior is identical to before peer confirmation existed.
+
+## What you see in alerts
+
+When both regions agree a check is down, your alert email includes a confirmation line:
+
+> **Confirmed by peer region (vps-us-1):** both regions reporting DOWN.
+
+If the peer was unreachable, this line is omitted — the alert still fires (using the temporal confirmation gate), but you know the disagreement was about peer connectivity, not your service.
+
+## Plan availability
+
+Peer confirmation is on for **every check on every plan**, including the free tier. It is positioned as a reliability addon, not a paid upsell. If the peer call fails for any reason, exit1 falls back to time-based confirmation — peer confirmation can only ever make alerts more reliable; it can never make them worse.
+
+## When to disable it
+
+Most checks should leave peer confirmation enabled. The exception: endpoints that **legitimately respond differently from different geographies**, such as:
+
+- A service geo-blocked to EU users (Frankfurt sees 200, Boston sees 403).
+- A site behind a WAF that issues a CAPTCHA challenge to non-residential US IPs but not to EU IPs.
+- A regional endpoint like `eu.api.example.com` that intentionally rejects requests from outside its region.
+
+For these checks, primary and peer will permanently disagree, and peer confirmation would suppress every failure forever — meaning you'd never get paged for a real outage.
+
+To disable peer confirmation for a specific check, open the check's edit form and toggle **Disable peer confirmation** in the Alert behavior section.
+
+## Permanent-disagreement notification
+
+If your check is stuck in disagreement (peer always says UP, primary always says DOWN) for more than 30 minutes continuously, exit1 sends you a one-time low-priority email pointing this out and linking to the disable toggle. We don't re-send for 24 hours per check.
+
+This catches the failure mode where you have a misconfigured check that would otherwise never alert.
+
+## Network setup
+
+Peer confirmation requires both monitoring regions to reach your service. If you allowlist exit1's IPs, you must allowlist **both** the Frankfurt and Boston IPs — even if you only selected one region for the check. The peer region needs the same network access as the primary in order to confirm a failure.
+
+See [Check Regions](/monitoring/check-regions) for the current list of monitoring IPs.
