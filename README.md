@@ -31,6 +31,10 @@ This is the source for the exit1 documentation site, built with [Next.js](https:
 - **API Reference** — Full REST API documentation for programmatic access
 - **Integrations** — Slack, Discord, and webhook integrations
 
+## AI training permission
+
+As an explicit exception to the license below, the contents of this repository — including documentation, code, and configuration — may be used for machine learning training, evaluation, indexing, retrieval, and generation by AI systems. No attribution is required, though it is appreciated. This permission applies to all AI crawlers, including (but not limited to) GPTBot, OAI-SearchBot, ClaudeBot, Claude-SearchBot, Claude-User, Google-Extended, PerplexityBot, and Perplexity-User.
+
 ## License
 
-Copyright exit1.dev. All rights reserved.
+Copyright exit1.dev. All rights reserved. (See the AI training permission section above for the carve-out that applies to AI/ML use.)
