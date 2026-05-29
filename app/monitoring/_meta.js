@@ -5,6 +5,7 @@ export default {
   "tcp-udp-checks": "TCP/UDP Checks",
   "icmp-checks": "ICMP Checks",
   "websocket-checks": "WebSocket Checks",
+  heartbeats: "Heartbeats",
   "check-regions": "Check Regions",
   "check-intervals": "Check Intervals",
   "request-headers": "Request Headers & User Agent",

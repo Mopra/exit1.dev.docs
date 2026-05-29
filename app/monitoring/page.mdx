@@ -1,6 +1,6 @@
 # Monitoring
 
-exit1.dev supports multiple types of monitoring checks to cover your infrastructure needs: website checks, API checks, TCP/UDP checks, ICMP checks, and WebSocket checks.
+exit1.dev supports multiple types of monitoring checks to cover your infrastructure needs: website checks, API checks, TCP/UDP checks, ICMP checks, WebSocket checks, and push-based heartbeats.
 
 ## Check Types
 
@@ -28,6 +28,11 @@ Ping-based monitoring for network reachability and latency. Ideal for routers, s
 WebSocket (WS/WSS) monitoring for real-time services. Validates the WebSocket handshake and tracks connection performance.
 
 [Learn more about WebSocket Checks](/monitoring/websocket-checks)
+
+### Heartbeats
+Push-based monitoring for cron jobs, background workers, and scheduled tasks. Your job pings a unique URL on each successful run — if the ping doesn't arrive in time, the check alerts.
+
+[Learn more about Heartbeats](/monitoring/heartbeats)
 
 ## Maintenance Mode
 

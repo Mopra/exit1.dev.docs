@@ -22,9 +22,9 @@ POST /v1/public/checks
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `url` | string | Yes | The URL to monitor |
+| `url` | string | Yes | The URL to monitor. Not required for `heartbeat` checks — exit1 generates a unique ping URL automatically. |
 | `name` | string | No | Display name (max 200 characters, defaults to URL) |
-| `type` | string | No | Check type: `website`, `rest_endpoint`, `ping`, `tcp`, `udp`, `dns`, `smtp`, `pop3`, `imap` (default: `website`) |
+| `type` | string | No | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `dns`, `websocket`, `heartbeat`, `domain` (default: `website`). Use `domain` to track only domain-expiry (no uptime probe) — pass a bare domain (e.g. `example.com`) as `url`. Requires Nano+ tier. |
 | `checkFrequency` | number | No | Check interval in minutes (default: 5, subject to plan limits) |
 | `checkRegionOverride` | string | No | Region to run checks from. Currently only `vps-eu-1` is available |
 | `httpMethod` | string | No | HTTP method for `website` and `rest_endpoint` types: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` (default: `GET`) |

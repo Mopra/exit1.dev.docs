@@ -1,0 +1,168 @@
+# Heartbeat Checks
+
+Heartbeat checks invert the usual monitoring model: instead of exit1.dev probing your service, your service pings exit1.dev on a schedule. If the ping doesn't arrive within the expected interval, the check is marked **DOWN** and an alert fires.
+
+This is the right tool for catching silent failures in code that has no public endpoint to probe.
+
+## When to Use Heartbeat Checks
+
+- **Cron jobs** — nightly backups, daily reports, scheduled cleanups
+- **Background workers** — queue consumers, ETL jobs, batch processors
+- **Data pipelines** — ingestion runs, sync jobs, report generators
+- **Scheduled tasks** — anything that should run on a known cadence but lives behind a firewall or NAT
+- **Internal services** — jobs you can't (or don't want to) expose to inbound probes
+
+If your job stops running entirely, a traditional uptime check has nothing to probe and will never alert. A heartbeat catches the absence.
+
+## Configuration
+
+### Name
+
+Give the check a descriptive name (e.g. "Nightly Postgres Backup"). Heartbeat checks have no user-supplied URL — exit1 generates a unique ping URL for you on creation.
+
+### Check Frequency
+
+The interval defines how often your job is expected to ping. If no ping arrives within one full interval, the check goes DOWN.
+
+- **Free** — minimum 5-minute intervals
+- **Nano** — minimum 2-minute intervals
+- **Pro** — minimum 30-second intervals
+- **Agency** — minimum 15-second intervals
+
+Pick an interval that matches your job's actual cadence. For a job that runs every hour, a 60-minute interval works — but consider going slightly longer (e.g. 70 minutes) to absorb normal runtime variance without false alerts.
+
+## The Ping URL
+
+When you create a heartbeat check, exit1 generates a unique URL like:
+
+```
+https://vps.exit1.dev/heartbeat/<token>
+```
+
+The token is a 64-character secret. Anyone with the URL can record a ping, so treat it like an API key — store it as a secret in your CI/CD system, secrets manager, or environment variables.
+
+You can copy the URL from the check's detail page in the dashboard. If a token is exposed, regenerate it via the [API](/api-reference/create-check) (`POST /v1/public/checks/:id/regenerate-token`) — this issues a new URL and invalidates the old one.
+
+## Sending Pings
+
+### Simple Ping (GET or POST)
+
+The minimum integration is a single HTTP request at the end of a successful run:
+
+```bash
+curl -fsS https://vps.exit1.dev/heartbeat/<token>
+```
+
+Both `GET` and `POST` work. The response is `200 {"ok": true}` on success.
+
+### Ping With Metadata (POST)
+
+Send a JSON body to attach context to the ping. All fields are optional.
+
+```bash
+curl -fsS -X POST https://vps.exit1.dev/heartbeat/<token> \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "success",
+    "duration": 4231,
+    "message": "Backed up 12 tables, 1.4 GB written"
+  }'
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | string | Short status label (max 200 chars) |
+| `duration` | number | Run duration in milliseconds |
+| `message` | string | Free-form details (max 1000 chars) |
+
+Metadata is stored with the ping and shown in the check's history.
+
+## Integration Examples
+
+### Linux cron
+
+```cron
+0 3 * * * /usr/local/bin/backup.sh && curl -fsS https://vps.exit1.dev/heartbeat/<token>
+```
+
+The `&&` ensures the ping only fires if `backup.sh` exits 0. A failed backup will skip the ping and trigger the missed-heartbeat alert.
+
+### Node.js worker
+
+```javascript
+const PING_URL = process.env.EXIT1_HEARTBEAT_URL;
+
+async function runJob() {
+  const start = Date.now();
+  try {
+    await doWork();
+    await fetch(PING_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: "success",
+        duration: Date.now() - start,
+      }),
+    });
+  } catch (err) {
+    // Skip ping on failure — let the missed heartbeat alert fire
+    console.error("Job failed:", err);
+    throw err;
+  }
+}
+```
+
+### Python
+
+```python
+import os, time, requests
+
+PING_URL = os.environ["EXIT1_HEARTBEAT_URL"]
+
+start = time.time()
+do_work()
+requests.post(PING_URL, json={
+    "status": "success",
+    "duration": int((time.time() - start) * 1000),
+}, timeout=10)
+```
+
+### GitHub Actions
+
+```yaml
+- name: Run nightly job
+  run: ./scripts/nightly.sh
+
+- name: Heartbeat
+  if: success()
+  run: curl -fsS ${{ secrets.EXIT1_HEARTBEAT_URL }}
+```
+
+## How It Works
+
+1. You create a heartbeat check and copy the generated ping URL
+2. Your job pings the URL after each successful run
+3. On every scheduled evaluation, exit1 checks how long it's been since the last ping
+4. If the elapsed time is within the configured interval, the check is **UP**
+5. If the elapsed time exceeds the interval, the check is **DOWN** and the [alert pipeline](/alerting) fires
+6. Until the first ping is ever received, the check stays in its initial state and does not alert
+
+## Alerting
+
+Heartbeat checks use the same alerting system as every other check type. A missed heartbeat triggers your configured notification channels — email, SMS, webhooks, Slack, Discord, and more. See [Alerting](/alerting) for full notification configuration.
+
+## Best Practices
+
+- **Only ping on success.** Use shell `&&`, try/catch, or `if: success()` so the ping is skipped when the job fails. That's the whole point — a missed ping is the signal.
+- **Pick an interval slightly longer than your job's worst-case runtime.** A job that usually finishes in 5 minutes but occasionally takes 12 should use at least a 15-minute heartbeat to avoid false alerts.
+- **Treat the ping URL as a secret.** Store it in your secrets manager or env vars, not in committed code.
+- **Use metadata for visibility.** Sending `duration` and `message` makes the check history far more useful when debugging.
+- **Combine with maintenance mode.** Planning downtime for a job? Toggle [Maintenance Mode](/monitoring/maintenance-mode) so the missed heartbeat doesn't page anyone.
+- **One check per job.** Don't share a single heartbeat across multiple jobs — you lose the ability to tell which one failed.
+
+## Limitations
+
+- The ping URL accepts unauthenticated requests by design — security relies on the secrecy of the token
+- Response time and SSL monitoring don't apply (no outbound probe is made)
+- Maximum metadata payload is `status` (200 chars) + `message` (1000 chars); larger payloads are truncated
+- Invalid JSON bodies are silently ignored, but the ping is still recorded
