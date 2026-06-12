@@ -32,6 +32,10 @@ Alerts can be configured at two levels:
 - **Account level** - Default alert settings applied to all checks
 - **Per-check level** - Override settings for individual checks
 
+## Check Severity (P1–P5)
+
+Each check has a **severity** from P1 (Critical) to P5 (Minimal), set with a slider under **Alert behavior** in its settings. Severity lets channels that support notification priority treat important sites differently from low-stakes ones — page me for a P1 outage, stay quiet for a P5 dev box — without configuring separate integrations. Today severity drives [Pushover](/integrations/pushover#per-check-severity-p1p5) priority; checks default to **P3**, which keeps each integration's own priority behavior unchanged.
+
 ## Getting Started
 
 - [Email Alerts](/alerting/email-alerts) - Configure email notifications

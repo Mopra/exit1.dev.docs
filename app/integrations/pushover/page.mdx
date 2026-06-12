@@ -1,0 +1,130 @@
+# Pushover Integration
+
+Send exit1.dev monitoring alerts as push notifications to your phone, tablet, or desktop via [Pushover](https://pushover.net).
+
+Pushover is a one-time-purchase notification service that delivers alerts to your devices over their own native push channels — no chat workspace required. Unlike Slack, Discord, or Teams, Pushover is API-based rather than webhook-based, so exit1.dev connects with your **API token** and **user key** instead of a webhook URL.
+
+## Setup
+
+### Step 1: Create a Pushover application
+
+1. Sign in at [pushover.net](https://pushover.net)
+2. Open [pushover.net/apps/build](https://pushover.net/apps/build)
+3. Fill in:
+   - **Name** — e.g. `exit1.dev Alerts`
+   - **Type** — Application
+   - **Description** — optional, e.g. `Uptime monitoring notifications`
+   - **URL** — optional
+   - **Icon** — optional
+4. Click **Create Application**
+5. Copy the **API Token/Key** shown at the top of the next page (30 characters, letters and digits)
+
+### Step 2: Copy your user key
+
+1. Go to [pushover.net](https://pushover.net) (the dashboard)
+2. Copy the **Your User Key** value at the top right (30 characters)
+
+If you want notifications delivered to a shared team, create a [Delivery Group](https://pushover.net/groups/build) instead and use its group key here.
+
+### Step 3: Connect in exit1.dev
+
+1. Open **Webhooks** in the exit1.dev app
+2. Click **Add Webhook**
+3. Pick **Pushover** as the platform
+4. Paste:
+   - **App API Token** — from Step 1
+   - **User or Group Key** — from Step 2
+5. (Optional) Pick a **Default priority**, **Sound**, or limit delivery to a specific **Device**
+6. Choose which events should send notifications
+7. Click **Create Webhook**, then **Test webhook** to confirm
+
+A test notification should appear on your devices within a few seconds.
+
+## Form fields
+
+| Field | Required | Notes |
+|---|---|---|
+| **App API Token** | Yes | 30 chars, letters/digits. From your Pushover application page. |
+| **User or Group Key** | Yes | 30 chars, letters/digits. From your Pushover dashboard. |
+| **Default priority** | No | `Lowest`, `Low`, `Normal` (default), `High`, or `Emergency`. See *Priority handling* below. |
+| **Retry Interval** | If priority = Emergency | Seconds between retries while waiting for acknowledgement. Minimum 30s. Default 60s. |
+| **Retry Expiration** | If priority = Emergency | Seconds before Pushover stops retrying. Maximum 10,800s (3 hours). Default 3,600s. |
+| **Time to live** | No | Seconds before Pushover auto-deletes the notification. Incompatible with Emergency. Leave blank to keep messages indefinitely. |
+| **Sound** | No | Any [built-in Pushover sound](https://pushover.net/api#sounds), or leave blank to use your device default. |
+| **Device** | No | Comma-separated device names. Leave blank to send to all your devices. |
+
+## Priority handling
+
+exit1.dev maps your chosen *Default priority* to per-event priorities so outages always wake you and recoveries never spam you:
+
+| Default priority you pick → | Critical events (`website_down`, `website_error`, `ssl_error`, `domain_expired`, `dns_record_missing`, `dns_resolution_failed`) | Non-critical events (`website_up`, `ssl_warning`, `domain_expiring`, `domain_renewed`, `dns_record_changed`) |
+|---|---|---|
+| Lowest (-2) | High (1) | Lowest (-2) |
+| Low (-1) | High (1) | Low (-1) |
+| Normal (0) | High (1) | Normal (0) |
+| High (1) | High (1) | High (1) |
+| **Emergency (2)** | **Emergency (2)** | High (1) |
+
+The rule: critical events are always sent at least at **High** so quiet hours can't swallow an outage. Non-critical events follow your default but are capped at **High** — picking Emergency only pages you for real outages, not recoveries.
+
+### Per-check severity (P1–P5)
+
+The *Default priority* above applies to every check the integration alerts on. To page differently for different sites — wake me for the production VPS, stay quiet for a dev box — give each check a **severity** instead of running multiple integrations.
+
+Each check has a severity slider under **Alert behavior** in its settings, from **P1 (Critical)** to **P5 (Minimal)**. When a check's severity is anything other than the default **P3**, it *overrides* the integration's Default priority for that check:
+
+| Check severity | Critical events | Non-critical events |
+|---|---|---|
+| **P1 — Critical** | **Emergency (2)** | High (1) |
+| P2 — High | High (1) | High (1) |
+| P3 — Normal (default) | follows the *Default priority* table above | follows the table above |
+| P4 — Low | Low (-1) | Low (-1) |
+| P5 — Minimal | Lowest (-2) | Lowest (-2) |
+
+This lets a single Pushover integration page you at Emergency for a P1 outage while a P4/P5 dev site stays below **High** and never bypasses quiet hours. Recoveries and warnings are still capped at **High** even on a P1 check — an Emergency notification repeats until you acknowledge it, which you don't want for a "back up" message.
+
+A check left at P3 (the default for every check) behaves exactly as if severity were never set, so the *Default priority* mapping above is unchanged for existing checks.
+
+### Emergency priority
+
+Pushover emergency notifications repeat at the **Retry Interval** until you tap acknowledge in the Pushover app, then stop after **Retry Expiration** seconds whether you acknowledge or not. Both parameters are required by Pushover for priority=2 and exit1.dev sends safe defaults (60s / 3600s) if you leave the fields blank.
+
+Emergency cannot be combined with **Time to live** — Pushover rejects the request. The form hides the TTL field when Emergency is selected.
+
+### Time to live (non-Emergency)
+
+If you set a TTL, Pushover auto-deletes the notification from the recipient device after the configured number of seconds. Useful when "the site was down 6 hours ago" is no longer information you care about. Leave blank to keep notifications until the user dismisses them.
+
+## Notification format
+
+A typical down notification looks like this on your device:
+
+> **Production API is DOWN**
+> URL: https://api.example.com
+> Response Time: 8421ms
+> Status Code: 500 Internal Server Error
+> Error: Upstream timed out
+
+Tapping the notification opens the monitored URL in your browser.
+
+Pushover caps the message body at 1024 characters and the title at 250 characters; exit1.dev truncates with an ellipsis when needed.
+
+## Managing the integration
+
+### Updating credentials
+Open the webhook in exit1.dev and re-enter the token, user key, priority, sound, or device. Saving rebuilds the stored endpoint URL.
+
+### Disconnecting
+Delete the webhook from exit1.dev. To revoke access on Pushover's side, delete the application from [pushover.net/apps](https://pushover.net/apps).
+
+## Troubleshooting
+
+- **Test webhook returns HTTP 400** — Double-check both the API token and user key are exactly 30 characters. Pushover responds with `{"status":0,"errors":[...]}` describing which field failed.
+- **Test webhook returns HTTP 429** — You've hit the Pushover monthly message quota (10,000/month on the free tier). Reset is at 00:00 UTC-6 (Central Time) on the 1st of the month.
+- **Notifications stop arriving silently** — Make sure the Pushover app on your device is signed in and notifications are allowed at the OS level. Pushover also has a 7-day device timeout on the free tier.
+- **Wrong sound or device** — Sound names are case-sensitive (`pushover`, not `Pushover`). Device names must match exactly as shown in your Pushover dashboard.
+- **Critical alerts arrive at Normal priority** — exit1.dev bumps critical events to High automatically; if you're seeing them at Normal, check that the webhook is set to a critical event type (e.g. `website_down`) rather than a warning.
+
+## Pricing notes
+
+Pushover is a one-time purchase per platform (~$5 USD for iOS, Android, or desktop) after a 30-day free trial. exit1.dev does not bundle Pushover delivery — you pay Pushover directly. exit1.dev sends one Pushover message per event per configured webhook; the [free tier](https://pushover.net/pricing) of 10,000 messages/month per application is more than enough for typical uptime monitoring.

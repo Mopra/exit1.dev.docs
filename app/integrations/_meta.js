@@ -5,4 +5,5 @@ export default {
   slack: "Slack",
   discord: "Discord",
   teams: "Teams",
+  pushover: "Pushover",
 };
