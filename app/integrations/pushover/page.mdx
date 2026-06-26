@@ -71,19 +71,19 @@ The rule: critical events are always sent at least at **High** so quiet hours ca
 
 The *Default priority* above applies to every check the integration alerts on. To page differently for different sites — wake me for the production VPS, stay quiet for a dev box — give each check a **severity** instead of running multiple integrations.
 
-Each check has a severity slider under **Alert behavior** in its settings, from **P1 (Critical)** to **P5 (Minimal)**. When a check's severity is anything other than the default **P3**, it *overrides* the integration's Default priority for that check:
+Each check has a severity slider under **Alert behavior** in its settings, from **P1 (Critical)** to **P5 (Minimal)**. When a check's severity is anything other than **P3**, it *overrides* the integration's Default priority for that check:
 
 | Check severity | Critical events | Non-critical events |
 |---|---|---|
 | **P1 — Critical** | **Emergency (2)** | High (1) |
-| P2 — High | High (1) | High (1) |
-| P3 — Normal (default) | follows the *Default priority* table above | follows the table above |
+| **P2 — High (default for new checks)** | High (1) | High (1) |
+| P3 — Normal | follows the *Default priority* table above | follows the table above |
 | P4 — Low | Low (-1) | Low (-1) |
 | P5 — Minimal | Lowest (-2) | Lowest (-2) |
 
 This lets a single Pushover integration page you at Emergency for a P1 outage while a P4/P5 dev site stays below **High** and never bypasses quiet hours. Recoveries and warnings are still capped at **High** even on a P1 check — an Emergency notification repeats until you acknowledge it, which you don't want for a "back up" message.
 
-A check left at P3 (the default for every check) behaves exactly as if severity were never set, so the *Default priority* mapping above is unchanged for existing checks.
+New checks default to **P2**, so outages reliably alert at **High** out of the box; bump the truly critical ones to **P1** for Emergency paging or drop noisy ones to P4/P5. **P3** is the neutral setting that defers to the *Default priority* mapping above — it behaves exactly as if severity were never set, so checks created before per-check severity existed are unchanged.
 
 ### Emergency priority
 
@@ -99,13 +99,16 @@ If you set a TTL, Pushover auto-deletes the notification from the recipient devi
 
 A typical down notification looks like this on your device:
 
-> **Production API is DOWN**
+> **🚨 Production API is DOWN**
 > URL: https://api.example.com
 > Response Time: 8421ms
 > Status Code: 500 Internal Server Error
 > Error: Upstream timed out
+> Previous Status: UP
 
-Tapping the notification opens the monitored URL in your browser.
+The title is prefixed with an emoji for the event type — 🚨 down, ✅ up, 🔒 SSL error, ⚠️ SSL warning — and the body includes the previous status.
+
+Each notification carries a **Go to Incident** link that opens the check's incident page in the exit1.dev app. (This replaces the old "open the monitored URL" behaviour, which couldn't open non-HTTP checks like `ping://`, `tcp://`, or `udp://`.) The monitored URL is still shown in the body and remains tappable for HTTP checks.
 
 Pushover caps the message body at 1024 characters and the title at 250 characters; exit1.dev truncates with an ellipsis when needed.
 
