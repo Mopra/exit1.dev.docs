@@ -58,6 +58,8 @@ GET /v1/public/checks/{id}
 }
 ```
 
+> **Note:** `status` and `consecutiveFailures` update in real time on every state change. The timing fields (`lastChecked`, `lastResponseTime`, `lastStatusCode`) are synced on status changes and at least once every 24 hours — for a check that has been stable for a while, `lastChecked` reflects the last sync, not the last probe. For per-probe timing data, use the [check history](/api-reference/check-history) endpoint.
+
 ## Error Responses
 
 ### Check Not Found

@@ -427,17 +427,25 @@ components:
         lastChecked:
           type: string
           format: date-time
-          description: Timestamp of last check execution
+          description: >-
+            Timestamp of the last synced check execution. Synced on status
+            changes and at least once every 24 hours; for a check that has
+            been stable for a while this reflects the last sync, not the
+            last probe. Use the check history endpoint for per-probe data.
           example: "2025-01-15T14:30:00Z"
         lastResponseTime:
           type: integer
           nullable: true
-          description: Last response time in milliseconds
+          description: >-
+            Response time in milliseconds from the last synced execution
+            (same freshness semantics as lastChecked)
           example: 245
         lastStatusCode:
           type: integer
           nullable: true
-          description: Last HTTP status code
+          description: >-
+            HTTP status code from the last synced execution (same freshness
+            semantics as lastChecked)
           example: 200
         uptime:
           type: number
