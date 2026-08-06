@@ -1,26 +1,34 @@
 # Domain Intelligence Setup
 
-Learn how to enable and configure Domain Intelligence for your monitoring checks.
+Learn how to enable Domain Intelligence — either as a standalone domain-only check, or as an add-on to an existing uptime check.
 
 ## Prerequisites
 
 - An active **Nano**, **Pro**, or **Agency** subscription
-- At least one monitoring check with a domain-based URL
 
-## Enabling Domain Intelligence
+## Option 1: Add a domain-only check
 
-### Per-Check Setup
+Use this when the domain isn't hosting anything you want to probe — e.g. a parked domain, a future-use name, or a trademark you're sitting on. The entry tracks only registration expiry; no uptime probe is sent, so it never goes "down".
 
-1. Navigate to the check you want to enable Domain Intelligence for
-2. Open the check settings
-3. Toggle **Domain Intelligence** to enabled
-4. Save the check
+1. Open the **Domain Intelligence** page in the app
+2. Click **Add domain**
+3. Enter the bare domain (e.g. `example.com`) and an optional display name
+4. Click **Add domain**
 
-The domain will be automatically extracted from the check URL and monitoring will begin.
+The entry counts as one check against your tier's check limit. RDAP data is fetched on the next scheduler run (typically within a few hours).
+
+## Option 2: Add Domain Intelligence to an existing check
+
+Use this when you already monitor uptime for the domain. The DI add-on is free — it doesn't count separately against your check limit.
+
+1. Open the **Domain Intelligence** page
+2. Click **Enable for checks**
+3. Select one or more existing checks
+4. Click **Enable**
 
 ### Automatic Domain Extraction
 
-exit1.dev automatically extracts the base domain from your check URL:
+For Option 2, exit1.dev automatically extracts the base domain from your check URL:
 
 | Check URL | Extracted Domain |
 |---|---|
@@ -30,7 +38,7 @@ exit1.dev automatically extracts the base domain from your check URL:
 
 ## Domain Information
 
-Once enabled, exit1.dev retrieves and displays:
+Once tracking begins, exit1.dev retrieves and displays:
 
 - **Registrar** - The domain registrar
 - **Registration date** - When the domain was first registered
@@ -40,7 +48,7 @@ Once enabled, exit1.dev retrieves and displays:
 
 ## RDAP Protocol
 
-exit1.dev uses the **Registration Data Access Protocol (RDAP)** to query domain information. RDAP is the modern replacement for WHOIS, offering:
+exit1.dev uses the **Registration Data Access Protocol (RDAP)** to query domain information, with WHOIS as a fallback for TLDs without RDAP. RDAP is the modern replacement for WHOIS, offering:
 
 - Standardized JSON responses
 - Better internationalization support
@@ -50,7 +58,10 @@ exit1.dev uses the **Registration Data Access Protocol (RDAP)** to query domain 
 ## Troubleshooting
 
 ### Domain not found
-If Domain Intelligence shows "domain not found," the TLD may not support RDAP. Check the IANA RDAP Bootstrap file for supported TLDs.
+If Domain Intelligence shows "domain not found," the TLD may not support RDAP and WHOIS may also be unavailable. Check the IANA RDAP Bootstrap file for supported TLDs.
 
 ### Stale data
-Domain registration data is cached and refreshed periodically. If you've recently renewed a domain, it may take some time for the updated expiration date to appear.
+Domain registration data is cached and refreshed on a schedule that tightens as the expiry approaches (weekly when far away, every 6 hours within a day of expiry). Use **Refresh** on the Domain Intelligence page to force an immediate query.
+
+### Converting between types
+A domain-only check can't be converted into a regular HTTP/uptime check (or vice versa) — the underlying URL shape differs. Delete and re-create instead.

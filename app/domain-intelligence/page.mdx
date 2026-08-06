@@ -4,20 +4,29 @@ Domain Intelligence tracks domain registration expiration dates using the RDAP p
 
 > **Note:** Domain Intelligence is available on the **Nano, Pro, and Agency** plans.
 
+## Two ways to use it
+
+You can monitor a domain's expiry in two ways, depending on whether you're already monitoring uptime for that domain.
+
+| Mode | When to use | How it counts |
+|---|---|---|
+| **Domain-only check** (`type: domain`) | The domain isn't hosting anything you want to probe — e.g. a parked domain, a future-use name, a trademark you're sitting on. | Counts as one check toward your tier's limit, but never executes an uptime probe. |
+| **Add-on to an existing check** | You already monitor uptime for a check on this domain. | The DI add-on is free — it doesn't count separately. |
+
 ## How It Works
 
-1. When you enable Domain Intelligence for a check, exit1.dev extracts the domain from the check URL
-2. The system queries RDAP (Registration Data Access Protocol) servers for domain registration data
-3. Expiration dates are tracked and monitored continuously
+1. You either create a domain-only check (just a bare domain, no URL) or enable Domain Intelligence on an existing check
+2. exit1.dev queries RDAP (Registration Data Access Protocol) servers for domain registration data
+3. Expiration dates are tracked and monitored continuously, on a schedule that tightens as expiry approaches
 4. Alerts are sent at configurable thresholds before the domain expires
 
 ## Key Features
 
-- **Automatic domain extraction** - Domains are extracted from your check URLs automatically
-- **RDAP protocol** - Uses the modern, standardized RDAP protocol (replacing legacy WHOIS)
-- **Configurable alerts** - Set custom alert thresholds for each domain
+- **Domain-only checks** - Track domains you don't host. No uptime probes are sent, so the entry never goes "down".
+- **Automatic domain extraction** - For DI on existing checks, the domain is extracted from the check URL automatically
+- **RDAP protocol** - Uses the modern, standardized RDAP protocol (with WHOIS fallback for TLDs without RDAP)
+- **Configurable alerts** - Set custom alert thresholds (default: 30, 14, 7, 1 days)
 - **Renewal detection** - Detects when a domain is renewed and clears expiration warnings
-- **Per-check configuration** - Enable or disable domain tracking for individual checks
 
 ## Supported TLDs
 
@@ -28,7 +37,9 @@ Domain Intelligence supports any TLD that has RDAP service endpoints, which incl
 - Country-code TLDs with RDAP support
 - Most new gTLDs
 
+For TLDs without RDAP support, exit1.dev automatically falls back to WHOIS where possible.
+
 ## Getting Started
 
-1. [Set up Domain Intelligence](/domain-intelligence/setup) on your checks
+1. [Set up Domain Intelligence](/domain-intelligence/setup) — either as a domain-only check, or as an add-on to existing checks
 2. [Configure alert thresholds](/domain-intelligence/alert-thresholds) for expiration warnings
