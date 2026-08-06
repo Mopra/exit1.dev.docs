@@ -1,6 +1,6 @@
 # Webhook Alerts
 
-Webhook alerts send HTTP POST requests to your endpoints when check status changes occur.
+Webhook alerts send HTTP `POST` requests to your endpoints when a check changes state.
 
 ## Configuration
 
@@ -11,14 +11,15 @@ Webhook limits by plan:
 | Plan | Webhooks |
 |---|---|
 | Free | 1 |
+| Indie | 3 |
 | Nano | 5 |
-| Pro | 25 |
-| Agency | 50 |
+| Pro | 50 |
 
-1. Navigate to **Settings** > **Alerting** > **Webhooks**
+1. Open **Webhooks** in the sidebar
 2. Enter the webhook URL
-3. Optionally add custom headers (e.g., authorization tokens)
-4. Save the webhook
+3. Choose which events the webhook should receive
+4. Optionally add custom headers (e.g. authorization tokens) and a signing secret
+5. Save the webhook
 
 ### Custom Headers
 
@@ -29,62 +30,276 @@ Authorization: Bearer your-secret-token
 X-Custom-Header: your-value
 ```
 
+### Request Headers
+
+Every delivery includes:
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `application/json` |
+| `User-Agent` | `Exit1-Website-Monitor/1.0` |
+| `X-Exit1-Signature` | `sha256=<hmac>` — only when a signing secret is set |
+
+### Verifying the Signature
+
+If you set a signing secret on the webhook, exit1.dev signs each delivery with an
+HMAC-SHA256 of the **raw JSON body** and sends it in `X-Exit1-Signature`, prefixed
+with `sha256=`. Compute the same HMAC over the raw body and compare:
+
+```js
+import crypto from 'node:crypto'
+
+function verify(rawBody, signatureHeader, secret) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex')
+  return crypto.timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected))
+}
+```
+
+Verify against the raw bytes you received, not a re-serialized object — re-encoding
+JSON can reorder keys and change the digest.
+
 ## Payload Format
 
-Webhook requests are sent as `POST` with a JSON body:
+The payloads below are what a plain **webhook** endpoint receives. Slack, Discord,
+Microsoft Teams, Pumble, PagerDuty and Opsgenie destinations receive that
+provider's own message format instead — see [Integrations](/integrations/webhooks).
+
+`timestamp` is **Unix epoch milliseconds** on every payload.
+
+### Uptime events
+
+`website_down`, `website_up`, `website_error`:
 
 ```json
 {
   "event": "website_down",
-  "check": {
+  "summary": "🚨 Production Website is DOWN",
+  "timestamp": 1785945946203,
+  "website": {
     "id": "abc123",
     "name": "Production Website",
     "url": "https://example.com",
-    "type": "website"
+    "type": "website",
+    "status": "offline",
+    "responseTime": 1500,
+    "responseTimeLimit": 5000,
+    "responseTimeExceeded": false,
+    "lastStatusCode": 503,
+    "statusCodeInfo": "HTTP 503",
+    "error": "Connection timeout",
+    "targetIp": "93.184.216.34"
   },
-  "status": {
-    "current": "down",
-    "previous": "up",
-    "statusCode": 503,
-    "responseTime": null
-  },
-  "region": "us-central",
-  "timestamp": "2025-01-15T14:30:00Z"
+  "previousStatus": "online",
+  "userId": "user_abc123"
 }
+```
+
+| Field | Notes |
+|---|---|
+| `website.status` | `online`, `offline` or `unknown` — not `up`/`down` |
+| `website.error` | Present only on `website_down` |
+| `website.statusCodeInfo` | Human-readable form of the status code: `HTTP 503`, or `Timeout` (-1), `Connection Error` (0), `WS Connected` (101). Never sent for `ping` and `websocket` checks |
+| `website.lastStatusCode` | The raw numeric code. Present only when the probe recorded one, so absent for check types that have no HTTP status |
+| `website.targetIp` | The IP the probe actually dialed; omitted when unknown |
+| `previousStatus` | The status before this transition |
+
+Fields whose value is unknown are omitted from the JSON rather than sent as `null`.
+
+### SSL events
+
+`ssl_error`, `ssl_warning`. Note there is **no `previousStatus`** on SSL payloads:
+
+```json
+{
+  "event": "ssl_warning",
+  "summary": "⚠️ Production Website - SSL WARNING",
+  "timestamp": 1785945946203,
+  "website": {
+    "id": "abc123",
+    "name": "Production Website",
+    "url": "https://example.com",
+    "status": "online",
+    "responseTime": 210,
+    "detailedStatus": "UP",
+    "sslCertificate": {
+      "valid": true,
+      "issuer": "Let's Encrypt",
+      "subject": "example.com",
+      "validFrom": 1780000000000,
+      "validTo": 1790000000000,
+      "daysUntilExpiry": 12
+    }
+  },
+  "userId": "user_abc123"
+}
+```
+
+When the certificate is invalid, `sslCertificate.valid` is `false` and
+`sslCertificate.error` carries the reason.
+
+### Domain events
+
+`domain_expiring` and `domain_expired` use a flatter shape with no `website` object:
+
+```json
+{
+  "event": "domain_expiring",
+  "checkId": "abc123",
+  "checkName": "Production Website",
+  "checkUrl": "https://example.com",
+  "checkSeverity": 3,
+  "domain": "example.com",
+  "daysUntilExpiry": 14,
+  "expiryDate": 1790000000000,
+  "registrar": "Example Registrar Inc.",
+  "threshold": 30,
+  "timestamp": 1785945946203
+}
+```
+
+`domain_renewed` reports the change instead of a countdown:
+
+```json
+{
+  "event": "domain_renewed",
+  "checkId": "abc123",
+  "checkName": "Production Website",
+  "checkSeverity": 3,
+  "domain": "example.com",
+  "oldExpiryDate": 1790000000000,
+  "newExpiryDate": 1821536000000,
+  "registrar": "Example Registrar Inc.",
+  "timestamp": 1785945946203
+}
+```
+
+### DNS events
+
+`dns_record_changed` and `dns_record_missing`:
+
+```json
+{
+  "event": "dns_record_changed",
+  "checkId": "abc123",
+  "checkName": "example.com DNS",
+  "checkSeverity": 3,
+  "domain": "example.com",
+  "changes": [
+    {
+      "recordType": "A",
+      "changeType": "changed",
+      "previousValues": ["93.184.216.34"],
+      "newValues": ["93.184.216.35"],
+      "detectedAt": 1785945946203
+    }
+  ],
+  "timestamp": 1785945946203
+}
+```
+
+Each entry in `changes` has:
+
+| Field | Notes |
+|---|---|
+| `recordType` | The DNS record type, e.g. `A`, `AAAA`, `MX`, `NS`, `TXT`, `CNAME` |
+| `changeType` | `changed`, `missing` or `added` |
+| `previousValues` | The values held at the previous baseline |
+| `newValues` | The values now observed |
+| `detectedAt` | Epoch ms when the change was detected |
+
+The event is `dns_record_missing` when any entry has `changeType: "missing"`, and
+`dns_record_changed` otherwise.
+
+`dns_resolution_failed` carries an `error` string in place of `changes`:
+
+```json
+{
+  "event": "dns_resolution_failed",
+  "checkId": "abc123",
+  "checkName": "example.com DNS",
+  "domain": "example.com",
+  "error": "queryA ETIMEOUT",
+  "timestamp": 1785945946203
+}
+```
+
+`checkSeverity` is included only when the check has an explicit severity set.
+
+## Testing
+
+Use **Send Test** in the webhook settings to fire a sample `website_down` payload
+at your endpoint. The test payload uses the same shape as a real uptime alert with
+placeholder values, so you can wire up and verify your handler before a real
+incident.
+
+Test deliveries carry an extra `"test": true` field, and the `User-Agent` is
+`Exit1-Website-Monitor/1.0 (Test)`. Real alerts never include `test`, so you can
+branch on it to avoid paging anyone from a test:
+
+```js
+if (payload.test) return acknowledgeOnly()
 ```
 
 ## Retry Logic
 
-If a webhook delivery fails, exit1.dev retries with **exponential backoff**:
+If a delivery fails, exit1.dev retries with jittered exponential backoff, starting
+at 5 seconds, doubling each attempt, and capping at 5 minutes:
 
-| Attempt | Delay |
+| Attempt | Delay after previous failure |
 |---|---|
-| 1 | Immediate |
-| 2 | 1 minute |
-| 3 | 2 minutes |
-| 4 | 4 minutes |
-| 5 | 8 minutes |
-| 6 | 16 minutes |
-| 7 | 32 minutes |
-| 8 | 64 minutes |
+| 1 | ~5 seconds |
+| 2 | ~10 seconds |
+| 3 | ~20 seconds |
+| 4 | ~40 seconds |
+| 5 | ~80 seconds |
+| 6 | ~160 seconds |
+| 7 | 5 minutes (cap) |
+| 8 | 5 minutes (cap) |
 
-After 8 failed attempts, the webhook delivery is abandoned for that event.
+Each delay is jittered, so actual timings vary slightly. Rate-limited endpoints
+(HTTP 429) back off on a longer ceiling.
+
+After **8** failed attempts the delivery is abandoned. Queued retries are also
+discarded after 48 hours.
+
+A delivery counts as failed when:
+
+- The endpoint returns a non-2xx status code
+- The request exceeds the 10-second timeout
+- The endpoint is unreachable
+
+A URL that is invalid or permanently gone is marked a permanent failure and is not
+retried.
 
 ## Health Tracking
 
-exit1.dev monitors the health of your webhook endpoints:
+Each webhook records the outcome of its last delivery:
 
-- **Healthy** - Webhooks are being delivered successfully
-- **Degraded** - Some deliveries are failing but retries succeed
-- **Unhealthy** - Multiple consecutive deliveries have failed
+| State | Meaning |
+|---|---|
+| `success` | The last delivery succeeded |
+| `failed` | The last delivery failed and may be retried |
+| `permanent_failure` | The endpoint is invalid or unreachable in a way retries cannot fix |
 
-Unhealthy webhooks are flagged in the dashboard so you can investigate and fix the endpoint.
+Webhooks in a failing state are flagged in the dashboard. Once a delivery succeeds
+the failure count resets automatically.
+
+## Alert Suppression
+
+Webhooks are not sent for every raw probe failure. A check must first pass its
+per-check **Down confirmation** before any alert fires, which absorbs single-probe
+blips and flapping endpoints. See [Alert Events](/alerting/alert-events).
 
 ## Best Practices
 
 - Use HTTPS endpoints for webhook URLs
-- Implement authentication via custom headers
-- Respond with a 2xx status code within 10 seconds
-- Implement idempotent webhook handlers (deliveries may be retried)
+- Set a signing secret and verify `X-Exit1-Signature` rather than relying on a static header
+- Respond with a 2xx status code within 10 seconds; process the payload asynchronously
+- Implement idempotent handlers — deliveries may be retried
+- Branch on `event`, and treat unknown event types as a no-op so new events don't break your handler
+- Read status from `website.status` / `previousStatus`, and remember optional fields may be absent
 - Monitor webhook health in the dashboard
 - Use webhooks to integrate with incident management tools (PagerDuty, Opsgenie, etc.)

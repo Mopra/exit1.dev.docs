@@ -6,48 +6,78 @@ Webhooks let you receive real-time notifications about check events at any HTTP 
 
 ### Adding a Webhook
 
-1. Navigate to **Settings** > **Integrations** > **Webhooks**
+1. Open **Webhooks** in the sidebar
 2. Click **Add Webhook**
-3. Enter the webhook URL (must be HTTPS)
-4. Optionally add custom headers for authentication
-5. Save the webhook
+3. Enter the webhook URL
+4. Choose which events the webhook should receive
+5. Optionally add custom headers and a signing secret
+6. Save the webhook
 
-You can configure up to **5 webhooks** per account.
+How many webhooks you can configure depends on your plan — Free 1, Indie 3, Nano 5,
+Pro 50.
 
 ### Custom Headers
 
-Add custom headers to authenticate incoming webhook requests:
+Add custom headers to authenticate requests to your endpoint:
 
 ```
 Authorization: Bearer your-webhook-secret
 X-Webhook-Source: exit1-dev
 ```
 
+For verifying that a request genuinely came from exit1.dev, prefer a signing secret
+over a static header — see
+[Verifying the Signature](/alerting/webhook-alerts#verifying-the-signature).
+
+## Destination Formats
+
+exit1.dev adapts the request body to the destination type, so the JSON payload is not
+universal:
+
+| Destination | Body |
+|---|---|
+| Webhook | exit1.dev JSON payload |
+| Slack, Pumble | `{ "text": "..." }` |
+| Discord | `{ "content": "..." }` |
+| Microsoft Teams | Adaptive Card attachment |
+| PagerDuty | Events API v2 envelope, posted to PagerDuty (needs `routing_key` in the URL) |
+| Opsgenie | Opsgenie alert payload |
+
+Only the plain **Webhook** type receives the exit1.dev JSON documented below. Pick it
+if you are writing your own handler.
+
 ## Event Payload
 
-All webhook events are sent as `POST` requests with a JSON body:
+Webhook events are sent as `POST` requests with a JSON body. The shape depends on the
+event family — uptime and SSL events wrap the check in a `website` object, while
+domain and DNS events use a flatter shape:
 
 ```json
 {
   "event": "website_down",
-  "check": {
+  "summary": "🚨 Production API is DOWN",
+  "timestamp": 1785945946203,
+  "website": {
     "id": "abc123",
     "name": "Production API",
     "url": "https://api.example.com/health",
-    "type": "api",
-    "method": "GET"
-  },
-  "status": {
-    "current": "down",
-    "previous": "up",
-    "statusCode": 503,
-    "responseTime": null,
+    "type": "rest_endpoint",
+    "status": "offline",
+    "responseTime": 1500,
+    "lastStatusCode": 503,
+    "statusCodeInfo": "HTTP 503",
     "error": "Service Unavailable"
   },
-  "region": "us-central",
-  "timestamp": "2025-01-15T14:30:00Z"
+  "previousStatus": "online",
+  "userId": "user_abc123"
 }
 ```
+
+Note `website.status` uses `online`/`offline`/`unknown`, and `timestamp` is Unix epoch
+milliseconds. Optional fields are omitted when unknown rather than sent as `null`.
+
+For every payload family — uptime, SSL, domain and DNS — with field-level notes, see
+[Webhook Alerts](/alerting/webhook-alerts#payload-format).
 
 ### Event Types
 
@@ -55,23 +85,31 @@ See the full [Alert Events](/alerting/alert-events) reference for all event type
 
 ## Retry Behavior
 
-Failed webhook deliveries are retried with exponential backoff:
+Failed deliveries are retried with jittered exponential backoff starting at 5 seconds,
+doubling each attempt and capping at 5 minutes:
 
-| Attempt | Delay After Failure |
+| Attempt | Delay after previous failure |
 |---|---|
-| 1 | Immediate |
-| 2 | 1 minute |
-| 3 | 2 minutes |
-| 4 | 4 minutes |
-| 5 | 8 minutes |
-| 6 | 16 minutes |
-| 7 | 32 minutes |
-| 8 | 64 minutes |
+| 1 | ~5 seconds |
+| 2 | ~10 seconds |
+| 3 | ~20 seconds |
+| 4 | ~40 seconds |
+| 5 | ~80 seconds |
+| 6 | ~160 seconds |
+| 7 | 5 minutes (cap) |
+| 8 | 5 minutes (cap) |
+
+After 8 failed attempts the delivery is abandoned; queued retries are also discarded
+after 48 hours. Endpoints that return HTTP 429 back off on a longer ceiling.
 
 A delivery is considered failed if:
+
 - The endpoint returns a non-2xx status code
 - The connection times out (10 second timeout)
 - The endpoint is unreachable
+
+A URL that is invalid or permanently gone is marked a permanent failure and is not
+retried.
 
 ## Testing
 
@@ -80,23 +118,22 @@ Test your webhook configuration:
 1. Set up your webhook endpoint
 2. Click **Send Test** in the webhook settings
 3. Verify your endpoint receives the test payload
-4. Check the response in the webhook delivery log
+
+The test fires a sample `website_down` payload with placeholder values, in the same
+shape as a real uptime alert.
 
 ## Health Monitoring
 
-exit1.dev tracks the health of your webhook endpoints:
-
-- **Healthy** - Recent deliveries are succeeding
-- **Degraded** - Some deliveries are failing
-- **Unhealthy** - Consecutive deliveries have failed
-
-Unhealthy webhooks are flagged in the dashboard. Fix the underlying issue and the webhook will automatically recover.
+exit1.dev records the outcome of each webhook's last delivery as `success`, `failed`,
+or `permanent_failure`. Webhooks in a failing state are flagged in the dashboard; once
+a delivery succeeds, the failure count resets automatically.
 
 ## Best Practices
 
 - Always use HTTPS endpoints
-- Implement webhook signature verification using custom headers
-- Return a 200 response within 10 seconds
+- Set a signing secret and verify `X-Exit1-Signature` instead of trusting a static header
+- Return a 2xx response within 10 seconds
 - Process webhook payloads asynchronously
 - Implement idempotency (the same event may be delivered more than once due to retries)
+- Treat unknown `event` values as a no-op so new event types don't break your handler
 - Monitor webhook health in the dashboard
