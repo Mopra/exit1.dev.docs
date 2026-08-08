@@ -34,7 +34,11 @@ Alerts can be configured at two levels:
 
 ## Check Severity (P1–P5)
 
-Each check has a **severity** from P1 (Critical) to P5 (Minimal), set with a slider under **Alert behavior** in its settings. Severity lets channels that support notification priority treat important sites differently from low-stakes ones — page me for a P1 outage, stay quiet for a P5 dev box — without configuring separate integrations. Today severity drives [Pushover](/integrations/pushover#per-check-severity-p1p5) priority. New checks default to **P2**, so outages reliably alert at High; bump the truly critical ones to **P1** for Emergency paging. **P3** is the neutral setting that keeps each integration's own priority behavior unchanged.
+Each check has a **severity** from P1 (Critical) to P5 (Minimal), set with a slider under **Alert behavior** in its settings. Severity lets channels that support notification priority treat important sites differently from low-stakes ones — page me for a P1 outage, stay quiet for a P5 dev box — without configuring separate integrations. Today severity drives [Pushover](/integrations/pushover#per-check-severity-p1p5) priority.
+
+The slider sits behind a **Use default priority** switch that is on by default, so a new check inherits whatever priority its integrations are configured with. Turn the switch off to set an explicit severity, which then becomes a hard ceiling on every alert that check sends — including outages. That makes **P3** a real choice ("tell me, but never interrupt me"), not a neutral one; leave the switch on if you want an outage to keep its usual High floor.
+
+Whatever you pick, a recovery notification is always capped below the level that bypasses do-not-disturb. Coming back up is never urgent.
 
 ## Getting Started
 

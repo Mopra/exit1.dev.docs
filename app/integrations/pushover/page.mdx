@@ -55,35 +55,53 @@ A test notification should appear on your devices within a few seconds.
 
 ## Priority handling
 
-exit1.dev maps your chosen *Default priority* to per-event priorities so outages always wake you and recoveries never spam you:
+exit1.dev never sends every event at the priority you picked. It sorts events into three classes and applies one rule to each, so outages can wake you and the all-clear can't:
 
-| Default priority you pick → | Critical events (`website_down`, `website_error`, `ssl_error`, `domain_expired`, `dns_record_missing`, `dns_resolution_failed`) | Non-critical events (`website_up`, `ssl_warning`, `domain_expiring`, `domain_renewed`, `dns_record_changed`) |
+| Event class | Events | Ceiling |
 |---|---|---|
-| Lowest (-2) | High (1) | Lowest (-2) |
-| Low (-1) | High (1) | Low (-1) |
-| Normal (0) | High (1) | Normal (0) |
-| High (1) | High (1) | High (1) |
-| **Emergency (2)** | **Emergency (2)** | High (1) |
+| **Critical** | `website_down`, `website_error`, `ssl_error`, `domain_expired`, `dns_record_missing`, `dns_resolution_failed` | May reach **Emergency (2)** |
+| **Warning** | `ssl_warning`, `domain_expiring`, `dns_record_changed` | Capped at **High (1)** |
+| **Recovery** | `website_up`, `domain_renewed` | Capped at **Normal (0)** |
 
-The rule: critical events are always sent at least at **High** so quiet hours can't swallow an outage. Non-critical events follow your default but are capped at **High** — picking Emergency only pages you for real outages, not recoveries.
+Three consequences worth internalising:
+
+- Only a real outage can ever page you at **Emergency** (the priority that repeats until you acknowledge).
+- Only an outage or a warning can bypass **quiet hours** — "your certificate expires in 3 days" is allowed to cut through, "your site is back up" is not.
+- A recovery never wakes you, at any setting. Good news is not urgent.
+
+### Default priority
+
+Your chosen *Default priority* is the starting point, then the ceilings above apply:
+
+| Default priority you pick → | Critical | Warning | Recovery |
+|---|---|---|---|
+| Lowest (-2) | High (1) | Lowest (-2) | Lowest (-2) |
+| Low (-1) | High (1) | Low (-1) | Low (-1) |
+| Normal (0) | High (1) | Normal (0) | Normal (0) |
+| High (1) | High (1) | High (1) | Normal (0) |
+| **Emergency (2)** | **Emergency (2)** | High (1) | Normal (0) |
+
+Critical events are additionally *floored* at **High**, so quiet hours can't swallow an outage even on an integration you set to Low. Picking Emergency pages you for real outages only.
 
 ### Per-check severity (P1–P5)
 
 The *Default priority* above applies to every check the integration alerts on. To page differently for different sites — wake me for the production VPS, stay quiet for a dev box — give each check a **severity** instead of running multiple integrations.
 
-Each check has a severity slider under **Alert behavior** in its settings, from **P1 (Critical)** to **P5 (Minimal)**. When a check's severity is anything other than **P3**, it *overrides* the integration's Default priority for that check:
+Each check has a severity slider under **Alert behavior** in its settings, from **P1 (Critical)** to **P5 (Minimal)**. It's greyed out behind a **Use default priority** switch, which is on by default. Turn the switch off to set an explicit severity; that severity then *replaces* the integration's Default priority for that check entirely — including **P3**, which is not a "neutral" setting:
 
-| Check severity | Critical events | Non-critical events |
-|---|---|---|
-| **P1 — Critical** | **Emergency (2)** | High (1) |
-| **P2 — High (default for new checks)** | High (1) | High (1) |
-| P3 — Normal | follows the *Default priority* table above | follows the table above |
-| P4 — Low | Low (-1) | Low (-1) |
-| P5 — Minimal | Lowest (-2) | Lowest (-2) |
+| Check severity | Critical | Warning | Recovery |
+|---|---|---|---|
+| **P1 — Critical** | **Emergency (2)** | High (1) | Normal (0) |
+| P2 — High | High (1) | High (1) | Normal (0) |
+| P3 — Normal | Normal (0) | Normal (0) | Normal (0) |
+| P4 — Low | Low (-1) | Low (-1) | Low (-1) |
+| P5 — Minimal | Lowest (-2) | Lowest (-2) | Lowest (-2) |
 
-This lets a single Pushover integration page you at Emergency for a P1 outage while a P4/P5 dev site stays below **High** and never bypasses quiet hours. Recoveries and warnings are still capped at **High** even on a P1 check — an Emergency notification repeats until you acknowledge it, which you don't want for a "back up" message.
+An explicit severity is a **hard ceiling on everything that check emits** — a P3 check never sends anything above Normal, so it never bypasses quiet hours, not even for an outage. That's the point: it's how you mark a check "tell me, but don't interrupt me". If you want the High floor that critical events normally get, leave **Use default priority** switched on rather than setting P3.
 
-New checks default to **P2**, so outages reliably alert at **High** out of the box; bump the truly critical ones to **P1** for Emergency paging or drop noisy ones to P4/P5. **P3** is the neutral setting that defers to the *Default priority* mapping above — it behaves exactly as if severity were never set, so checks created before per-check severity existed are unchanged.
+This lets one Pushover integration page you at Emergency for a P1 outage while a P4/P5 dev box stays quiet. Bulk edit can set severity across many checks at once, or clear it back to the default.
+
+**Severity currently affects Pushover only.** Other integrations (Slack, Discord, Teams, PagerDuty, generic webhooks) deliver every event the same way regardless of a check's severity.
 
 ### Emergency priority
 
@@ -126,7 +144,8 @@ Delete the webhook from exit1.dev. To revoke access on Pushover's side, delete t
 - **Test webhook returns HTTP 429** — You've hit the Pushover monthly message quota (10,000/month on the free tier). Reset is at 00:00 UTC-6 (Central Time) on the 1st of the month.
 - **Notifications stop arriving silently** — Make sure the Pushover app on your device is signed in and notifications are allowed at the OS level. Pushover also has a 7-day device timeout on the free tier.
 - **Wrong sound or device** — Sound names are case-sensitive (`pushover`, not `Pushover`). Device names must match exactly as shown in your Pushover dashboard.
-- **Critical alerts arrive at Normal priority** — exit1.dev bumps critical events to High automatically; if you're seeing them at Normal, check that the webhook is set to a critical event type (e.g. `website_down`) rather than a warning.
+- **Critical alerts arrive at Normal priority** — the High floor only applies to checks using the integration default. If the check has an explicit severity of **P3**, Normal is its hard ceiling for every event including outages. Turn **Use default priority** back on for that check, or raise it to P1/P2. Otherwise, confirm the webhook is subscribed to a critical event type (e.g. `website_down`) rather than a warning.
+- **Recoveries arrive at Normal, not High** — intended. A `website_up` notification is capped at Normal at every severity and every default priority, so the all-clear can't bypass quiet hours. Outages are unaffected.
 
 ## Pricing notes
 
