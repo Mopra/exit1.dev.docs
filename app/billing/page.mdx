@@ -2,86 +2,111 @@
 
 exit1.dev offers four plans. Pick the one that fits your monitoring needs — upgrade or downgrade anytime.
 
+The ladder is **monotonic**: every tier is a strict superset of the one below it. Caps only rise, check intervals only get faster, and no feature is ever taken away by moving up. Check interval is the primary axis — *how fast do you want to know* — with the team-and-scale features layered on at Nano and Pro.
+
 ## Plan Comparison
 
-| Feature | Free | Nano | Pro | Agency |
+| Feature | Free | Indie | Nano | Pro |
 |---|---|---|---|---|
-| **Monthly price** | $0 | $9 | $24 | $49 |
-| **Annual price** | — | $84 ($7/mo) | $240 ($20/mo) | $444 ($37/mo) |
-| **Monitors** | 10 | 50 | 500 | 1,000 |
-| **Min check interval** | 5 min | 2 min | 30 sec | 15 sec |
-| **Multi-region checks** | No | Yes | Yes | Yes |
-| **Status pages** | 1 | 5 | 25 | 50 |
+| **Monthly price** | $0 | $4 | $9 | $24 |
+| **Annual price** | — | $36 ($3/mo) | $84 ($7/mo) | $240 ($20/mo) |
+| **Monitors** | 50 | 100 | 250 | 1,000 |
+| **Min check interval** | 5 min | 1 min | 30 sec | 15 sec |
+| **Live probe stream** | Yes | Yes | Yes | Yes |
+| **Status pages** | 1 | 1 | 5 | 50 |
 | **Status page builder** (branding, layout, widgets) | No | Yes | Yes | Yes |
-| **Email alerts** | 10/hr, 10/mo | 50/hr, 1,000/mo | 500/hr, 10,000/mo | 1,000/hr, 50,000/mo |
-| **SMS alerts** | No | No | 25/hr, 50/mo | 50/hr, 100/mo |
-| **Webhooks** | 1 | 5 | 25 | 50 |
-| **Slack / Discord / Teams** | No | No | Yes | Yes |
-| **Domain Intelligence** (WHOIS, expiry, DNS) | No | Yes | Yes | Yes |
-| **Maintenance mode** | No | Yes | Yes | Yes |
-| **API access + MCP** | No | No | Yes (10 keys) | Yes (25 keys) |
-| **CSV bulk export** | No | No | Yes | Yes |
+| **Email alerts** | 50/hr, 300/mo | 100/hr, 800/mo | 250/hr, 2,500/mo | 1,000/hr, 10,000/mo |
+| **SMS alerts** | No | No | No | 25/hr, 50/mo |
+| **Webhooks** | 1 | 3 | 10 | 100 |
+| **Slack / Discord / Teams** | No | No | No | Yes |
+| **API access + MCP** | Yes (1 key) | Yes (3 keys) | Yes (10 keys) | Yes (100 keys) |
+| **DNS record monitoring** | No | Yes | Yes | Yes |
+| **Domain Intelligence** (WHOIS, expiry, DNS) | No | No | Yes | Yes |
+| **Maintenance mode** | No | No | Yes | Yes |
+| **Stats & timeline views** | No | No | Yes | Yes |
+| **Region choice** (US / EU / Asia) | No | No | Yes | Yes |
+| **CSV bulk export** | No | No | No | Yes |
 | **SSL monitoring** | Yes | Yes | Yes | Yes |
 | **Response validation** | Yes | Yes | Yes | Yes |
 | **Bulk import / edit** | Yes | Yes | Yes | Yes |
-| **Data retention** | 60 days | 60 days | 365 days | 1,095 days (3 yr) |
+| **Data retention** | 60 days | 90 days | 365 days | 1,095 days (3 yr) |
 | **Team seats** 🕐 | — | — | — | 10 |
 | **SLA reporting** 🕐 | No | No | No | Yes |
 | **Custom status domain** 🕐 | No | No | No | Yes |
 
-🕐 Coming soon — feature flagged on Agency but not yet generally available.
+🕐 Coming soon — feature flagged on Pro but not yet generally available.
 
-Save 25% with annual billing on any paid plan.
+Save roughly 17–25% with annual billing on any paid plan.
+
+> **API and MCP access are on every plan, including Free.** They are the same
+> entitlement — if a plan can mint an API key, it can use the MCP server. Free
+> mints one. See [MCP integration](/integrations/mcp).
+
+> **The Live page is on every plan too.** Real-time WebSocket probe streaming
+> with scrolling charts and raw-probe tables is not a paid feature.
 
 ## Free
 
-Good for individuals and small side projects.
+Genuinely usable monitoring, not a trial. No credit card.
 
-- 10 monitors, 5-minute intervals
-- Email alerts (10/hr, 10/mo)
+- 50 monitors, 5-minute intervals
+- Email alerts (50/hr, 300/mo)
 - 1 webhook integration
+- 1 API key with MCP access
 - 1 public status page
 - SSL certificate monitoring
+- Live probe stream
 - 60 days of history
 - Bulk import and bulk edit
 
-## Nano — $9/mo
+## Indie — $4/mo ($3/mo annual)
 
-For hobbyists and small sites that need faster checks and a proper status page.
+For sites you want watched closely, with your own name on the status page.
 
-- 50 monitors, 2-minute intervals
-- Email alerts (50/hr, 1,000/mo)
-- 5 webhook integrations
-- 5 status pages with the drag-and-drop builder
+- 100 monitors, 1-minute intervals
+- Email alerts (100/hr, 800/mo)
+- 3 webhook integrations
+- 3 API keys with MCP access
+- 1 status page with the full drag-and-drop builder — your logo, colours and layout
+- DNS record monitoring (5-minute minimum interval)
+- 90 days of history
+
+## Nano — $9/mo ($7/mo annual)
+
+Production monitoring for small teams.
+
+- 250 monitors, 30-second intervals
+- Email alerts (250/hr, 2,500/mo)
+- 10 webhook integrations
+- 10 API keys with MCP access
+- 5 status pages with the builder
 - Domain Intelligence (WHOIS, expiry, DNS)
 - Maintenance mode
-- 60 days of history
-
-## Pro — $24/mo
-
-For teams that need real incident response — fast checks, SMS, team channels, and API access.
-
-- 500 monitors, 30-second intervals
-- Email alerts (500/hr, 10,000/mo) + SMS alerts (25/hr, 50/mo)
-- 25 webhook integrations
-- Slack, Discord, and Microsoft Teams alert channels
-- 25 status pages
-- 10 API keys with MCP (AI assistant) access
-- CSV bulk export
+- Region choice — pin checks to US, EU, or Asia
+- Stats and timeline views
 - 365 days of history
 
-## Agency — $49/mo
+## Pro — $24/mo ($20/mo annual)
 
-For agencies and operators managing monitoring at scale.
+Everything exit1 does, at the highest limits.
 
 - 1,000 monitors, 15-second intervals
-- Email alerts (1,000/hr, 50,000/mo) + SMS alerts (50/hr, 100/mo)
-- 50 webhook integrations
+- Email alerts (1,000/hr, 10,000/mo) + SMS alerts (25/hr, 50/mo)
+- 100 webhook integrations
+- 100 API keys with MCP access
+- Slack, Discord, and Microsoft Teams alert channels
 - 50 status pages
-- 25 API keys with MCP access
 - CSV bulk export
+- Per-log comments and extra email recipients (per-check and per-folder)
 - 1,095 days (3 years) of history
 - Coming soon: 10 team seats, SLA reporting, custom status page domain
+
+## Retired plans
+
+**Agency** was retired and folded into Pro, which carries every former Agency
+entitlement. Existing Agency subscribers keep working with no capability loss.
+**Scale** and **Starter** are legacy plan keys that resolve to Pro and Nano
+respectively.
 
 ## Upgrading
 
@@ -95,4 +120,11 @@ For agencies and operators managing monitoring at scale.
 1. Navigate to **Settings** > **Billing**
 2. Click **Change Plan** and pick a lower tier
 3. Your plan changes at the end of the current billing period
-4. Resources above the new tier's limits are paused: checks beyond the monitor cap, extra webhooks, extra status pages, and — when leaving Pro or Agency — API keys and SMS alerts
+4. Resources above the new tier's limits are **paused, never deleted**
+
+On a downgrade, exit1 prunes to the new plan's caps rather than switching
+everything off: the newest monitors within your new cap keep running, checks
+beyond it are disabled (not deleted), check intervals are widened to the new
+floor, and extra webhooks, API keys and status pages are disabled. Status-page
+branding and pinned regions are cleared if the new plan doesn't include them.
+Everything comes back if you re-subscribe.

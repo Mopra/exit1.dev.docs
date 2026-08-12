@@ -25,9 +25,9 @@ Give the check a descriptive name (e.g. "Nightly Postgres Backup"). Heartbeat ch
 The interval defines how often your job is expected to ping. If no ping arrives within one full interval, the check goes DOWN.
 
 - **Free** — minimum 5-minute intervals
-- **Nano** — minimum 2-minute intervals
+- **Nano** — minimum 30-second intervals
 - **Pro** — minimum 30-second intervals
-- **Agency** — minimum 15-second intervals
+- **Pro** — minimum 15-second intervals
 
 Pick an interval that matches your job's actual cadence. For a job that runs every hour, a 60-minute interval works — but consider going slightly longer (e.g. 70 minutes) to absorb normal runtime variance without false alerts.
 

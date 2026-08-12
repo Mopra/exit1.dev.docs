@@ -7,9 +7,13 @@ Check intervals determine how frequently exit1.dev monitors your endpoints.
 | Plan | Minimum Interval | Checks per Hour |
 |---|---|---|
 | Free | 5 minutes | 12 |
-| Nano | 2 minutes | 30 |
-| Pro | 30 seconds | 120 |
-| Agency | 15 seconds | 240 |
+| Indie | 1 minute | 60 |
+| Nano | 30 seconds | 120 |
+| Pro | 15 seconds | 240 |
+
+DNS checks are floored separately — 5 minutes on Indie and Nano, 1 minute on
+Pro — because a DNS query costs far more than an HTTP probe. Your plan's
+general interval does not carry over to them.
 
 ## Smart Verification
 
