@@ -1,9 +1,19 @@
 import { Footer, Layout, Navbar } from "nextra-theme-docs";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
+import { Albert_Sans } from "next/font/google";
 import "nextra-theme-docs/style.css";
 import "./globals.css";
 import type { Metadata } from "next";
+
+// Albert Sans is the app's `--font-sans`. Self-hosted by next/font so the docs
+// don't depend on a Google Fonts round-trip the app makes in its index.html.
+const albertSans = Albert_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-albert-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -15,7 +25,13 @@ export const metadata: Metadata = {
 };
 
 const logo = (
-  <span style={{ fontWeight: 800, fontSize: "1.1rem" }}>exit1.dev</span>
+  <span className="flex items-center gap-2">
+    {/* Static export with `images.unoptimized` — next/image would add a wrapper
+        and no optimization. The app renders the same mark the same way. */}
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src="/e_.svg" alt="" className="size-6 shrink-0" />
+    <span className="font-semibold text-[1.05rem] tracking-tight">exit1.dev</span>
+  </span>
 );
 
 export default async function RootLayout({
@@ -24,13 +40,35 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html
+      lang="en"
+      dir="ltr"
+      suppressHydrationWarning
+      className={albertSans.variable}
+    >
+      {/*
+        Nextra derives its whole primary/accent scale from one HSL triple and
+        paints the page canvas from `backgroundColor`. Both come from the app's
+        tokens: hue 160 / sat 51% is `--primary`
+        (oklch(0.5854 0.1022 167.0051)), and the canvases are the app's warm
+        cream `--background` (#FFFCF0) and its #15151B dark counterpart.
+
+        Lightness deviates from the app's flat 37%: Nextra spends primary on
+        link and active-nav *text*, where 37% only reaches 3.9:1 on cream and
+        is dimmer than it needs to be on #15151B. 33/46 clears 4.5:1 in both.
+        This is `--primary-text` in globals.css — change both together.
+      */}
       <Head
-          backgroundColor={{
-            dark: "rgb(10,10,10)",
-            light: "rgb(250,250,250)",
-          }}
-        />
+        color={{
+          hue: 160,
+          saturation: 51,
+          lightness: { light: 33, dark: 46 },
+        }}
+        backgroundColor={{
+          dark: "#15151B",
+          light: "#FFFCF0",
+        }}
+      />
       <body>
         <Layout
           navbar={

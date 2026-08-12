@@ -8,12 +8,15 @@ interface ApiEndpointProps {
   children?: React.ReactNode;
 }
 
+// Tinted from the shared semantic tokens rather than Tailwind's raw palette,
+// so a "destructive" here is the same red the dashboard paints a down check.
+// Read methods use the brand teal; writes escalate warning -> destructive.
 const methodColors: Record<string, string> = {
-  GET: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  POST: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  PUT: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  PATCH: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  DELETE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  GET: "bg-info/10 text-info border-info/40",
+  POST: "bg-success/10 text-success border-success/40",
+  PUT: "bg-warning/10 text-warning border-warning/40",
+  PATCH: "bg-warning/10 text-warning border-warning/40",
+  DELETE: "bg-destructive/10 text-destructive border-destructive/40",
 };
 
 export function ApiEndpoint({

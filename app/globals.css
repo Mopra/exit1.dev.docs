@@ -4,116 +4,152 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =============================================================================
+   BRAND TOKENS
+   Mirrored from the monitor app (exit1.dev/src/style.css) so docs, app and
+   marketing read as one product. Only the subset the docs actually renders is
+   carried over — no tier/folder/chart/aurora tokens live here. If a value
+   changes in the app's token block, change it here too.
+   ============================================================================= */
+:root {
+  --background: oklch(0.9901 0.0161 95.2193);
+  --foreground: oklch(0.2138 0.0019 286.2347);
+  --card: oklch(0.9901 0.0161 95.2193);
+  --card-foreground: oklch(0.2138 0.0019 286.2347);
+  --popover: oklch(0.9901 0.0161 95.2193);
+  --popover-foreground: oklch(0.2138 0.0019 286.2347);
+  --primary: oklch(0.5854 0.1022 167.0051);
+  --primary-foreground: oklch(0.2002 0 0);
+  /* Docs-only. The app uses --primary as a fill with a dark foreground on top,
+     so it never has to survive as text; the docs run it as link and active-nav
+     colour on the canvas, where it lands at 3.9:1. Darkened to clear 4.5:1
+     (light) and lifted for the near-black canvas (dark). Same value is handed
+     to Nextra's <Head color> in app/layout.tsx — keep the two in step. */
+  --primary-text: hsl(160 51% 33%);
+  --secondary: oklch(0.9565 0.0204 74.6609);
+  --secondary-foreground: oklch(0.2138 0.0019 286.2347);
+  --muted: oklch(0.9665 0.0149 94.1982);
+  --muted-foreground: oklch(0.5555 0 0);
+  --accent: oklch(0.9702 0 0);
+  --accent-foreground: oklch(0.2138 0.0019 286.2347);
+  --destructive: oklch(0.5379 0.2186 25.9751);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Semantic status — green healthy / amber warning / brand-teal info. */
+  --success: oklch(0.704 0.191 152);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.769 0.188 70);
+  --warning-foreground: oklch(0 0 0);
+  --info: var(--primary);
+  --info-foreground: var(--primary-foreground);
+
+  --border: oklch(0.9219 0 0);
+  --input: oklch(0.9219 0 0);
+  --ring: oklch(0.5854 0.1022 167.0051);
+
+  --font-sans: var(--font-albert-sans), ui-sans-serif, sans-serif, system-ui;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --radius: 0.5rem;
+  --tracking-normal: -0.01em;
+
+  --shadow-2xs: 0px 4px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 4px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 4px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 4px 3px 0px hsl(0 0% 0% / 0.10), 0px 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0px 4px 3px 0px hsl(0 0% 0% / 0.10), 0px 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0px 4px 3px 0px hsl(0 0% 0% / 0.10), 0px 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0px 4px 3px 0px hsl(0 0% 0% / 0.10), 0px 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0px 4px 3px 0px hsl(0 0% 0% / 0.25);
+}
+
+.dark {
+  /* Same elevation story as the app: the page canvas (#15151B) sits below
+     cards/panels, which lift +0.035 in lightness. Hue 285 is the subtle
+     blue-violet tint that keeps the dark theme from reading as flat grey. */
+  --background: #15151b;
+  --foreground: oklch(0.9851 0 0);
+  --card: oklch(0.235 0.014 285);
+  --card-foreground: oklch(0.9851 0 0);
+  --popover: oklch(0.235 0.014 285);
+  --popover-foreground: oklch(0.9851 0 0);
+  --primary: oklch(0.5854 0.1022 167.0051);
+  --primary-foreground: oklch(0 0 0);
+  --primary-text: hsl(160 51% 46%);
+  --secondary: oklch(0.235 0.014 285);
+  --secondary-foreground: oklch(0.9851 0 0);
+  --muted: oklch(0.278 0.014 285);
+  --muted-foreground: oklch(0.709 0 0);
+  --accent: oklch(0.3715 0 0);
+  --accent-foreground: oklch(0.9851 0 0);
+  --destructive: oklch(0.7036 0.1881 22.1462);
+  --destructive-foreground: oklch(0.9851 0 0);
+
+  --success: oklch(0.78 0.17 152);
+  --success-foreground: oklch(0 0 0);
+  --warning: oklch(0.85 0.16 80);
+  --warning-foreground: oklch(0 0 0);
+  --info: var(--primary);
+  --info-foreground: var(--primary-foreground);
+
+  --border: oklch(0.2768 0 0);
+  --input: oklch(0.325 0 0);
+  --ring: oklch(0.5854 0.1022 167.0051);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-}
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
 
-.dark {
-  --background: oklch(0.07 0 0);
-  --foreground: oklch(0.95 0 0);
-  --card: oklch(0.1 0 0);
-  --card-foreground: oklch(0.95 0 0);
-  --popover: oklch(0.1 0 0);
-  --popover-foreground: oklch(0.95 0 0);
-  --primary: oklch(0.95 0 0);
-  --primary-foreground: oklch(0.07 0 0);
-  --secondary: oklch(0.16 0 0);
-  --secondary-foreground: oklch(0.95 0 0);
-  --muted: oklch(0.16 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.16 0 0);
-  --accent-foreground: oklch(0.95 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.4 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.07 0 0);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.95 0 0);
-  --sidebar-primary-foreground: oklch(0.07 0 0);
-  --sidebar-accent: oklch(0.14 0 0);
-  --sidebar-accent-foreground: oklch(0.95 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.4 0 0);
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 }
 
 @layer base {
@@ -122,103 +158,183 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    letter-spacing: var(--tracking-normal);
   }
 }
 
-/*
- * Nextra theme dark mode overrides
- * Match exit1.dev website/app aesthetic: deep black bg, high contrast borders
- */
+/* =============================================================================
+   NEXTRA BRIDGE
+   nextra-theme-docs ships its own prefixed Tailwind build with a fixed
+   `--x-*` theme scale. Rather than chasing individual selectors, we re-point
+   that scale at the brand palette — every piece of theme chrome (navbar,
+   sidebar, TOC, search, pagination, callouts, code blocks) inherits from it.
+   These rules are intentionally unlayered so they beat Nextra's `@layer theme`.
+   ============================================================================= */
+:root {
+  --x-font-sans: var(--font-sans);
+  --x-font-mono: var(--font-mono);
+  --x-default-font-family: var(--font-sans);
+  --x-default-mono-font-family: var(--font-mono);
 
-/* Override Nextra's internal neutral colors for dark mode */
+  --x-radius-sm: calc(var(--radius) - 4px);
+  --x-radius-md: calc(var(--radius) - 2px);
+  --x-radius-lg: var(--radius);
+  --x-radius-xl: calc(var(--radius) + 4px);
+  --x-tracking-tight: calc(var(--tracking-normal) - 0.025em);
+
+  /* Neutral ramps, retinted. Tailwind's lightness steps are preserved so
+     Nextra's contrast pairings still hold; only hue/chroma change — warm
+     (hue ~95, matching the cream canvas) through the light end, blue-violet
+     (hue 285, matching #15151B) through the dark end. Nextra uses the low
+     steps for light mode and the high steps for dark, so one ramp serves
+     both themes. */
+  --x-color-gray-50: oklch(0.985 0.012 95);
+  --x-color-gray-100: oklch(0.967 0.015 94);
+  --x-color-gray-200: oklch(0.928 0.012 94);
+  --x-color-gray-300: oklch(0.872 0.012 94);
+  --x-color-gray-400: oklch(0.707 0.008 94);
+  --x-color-gray-600: oklch(0.446 0.012 285);
+  --x-color-gray-700: oklch(0.373 0.014 285);
+  --x-color-gray-800: oklch(0.278 0.014 285);
+  --x-color-gray-900: oklch(0.214 0.008 286);
+
+  --x-color-neutral-50: oklch(0.985 0.012 95);
+  --x-color-neutral-200: oklch(0.922 0.012 94);
+  --x-color-neutral-300: oklch(0.87 0.012 94);
+  --x-color-neutral-400: oklch(0.708 0.008 94);
+  --x-color-neutral-500: oklch(0.556 0.006 285);
+  --x-color-neutral-600: oklch(0.439 0.012 285);
+  --x-color-neutral-700: oklch(0.371 0.014 285);
+  --x-color-neutral-800: oklch(0.269 0.014 285);
+  --x-color-neutral-900: oklch(0.205 0.014 285);
+
+  /* Prose. Nextra paints article copy with the slate scale, which reads cold
+     against the warm canvas — retinted to the app's near-neutral foreground. */
+  --x-color-slate-50: oklch(0.985 0.012 95);
+  --x-color-slate-100: oklch(0.967 0.015 94);
+  --x-color-slate-200: oklch(0.93 0 0);
+  --x-color-slate-700: oklch(0.3 0.005 286);
+  --x-color-slate-900: oklch(0.214 0.008 286);
+
+  /* Callout accents.
+     Nextra builds each callout from a fixed triple — `bg-{c}-100 text-{c}-700
+     border-{c}-700` in light, `bg-{c}-900/30 text-{c}-500 border-{c}-600` in
+     dark — so every shade in a family has to move together or the tint and
+     the text end up different hues. Each family is re-derived from the app's
+     semantic token: success -> green, warning -> yellow, destructive -> red,
+     primary -> blue (info), and the nano-tier violet -> purple.
+     Light-mode text/border steps are hand-darkened rather than mixed, because
+     the raw tokens sit too light to clear 4.5:1 on the cream canvas. */
+  --x-color-green-100: color-mix(in oklch, var(--success) 12%, var(--background));
+  --x-color-green-700: oklch(0.48 0.13 152);
+  --x-color-yellow-50: color-mix(in oklch, var(--warning) 12%, var(--background));
+  --x-color-yellow-700: oklch(0.55 0.14 70);
+  --x-color-red-100: color-mix(in oklch, var(--destructive) 12%, var(--background));
+  --x-color-red-700: var(--destructive);
+  --x-color-blue-100: color-mix(in oklch, var(--primary) 12%, var(--background));
+  --x-color-blue-700: var(--primary-text);
+  --x-color-purple-100: color-mix(in oklch, oklch(0.541 0.281 293) 12%, var(--background));
+  --x-color-purple-600: oklch(0.541 0.281 293);
+}
+
 .dark {
-  --x-color-neutral-800: oklch(0.18 0 0);
-  --x-color-neutral-900: oklch(0.07 0 0);
-  --x-color-gray-800: oklch(0.18 0 0);
-  --x-color-gray-900: oklch(0.07 0 0);
+  /* Dark halves of the callout triples. The `-900` steps are consumed at 30%
+     alpha, so they are mixed halfway to the canvas first — a raw token at 30%
+     over #15151B washes out the text sitting on it. */
+  --x-color-green-900: color-mix(in oklch, var(--success) 45%, var(--background));
+  --x-color-green-800: color-mix(in oklch, var(--success) 55%, var(--background));
+  --x-color-green-500: var(--success);
+  --x-color-yellow-700: color-mix(in oklch, var(--warning) 45%, var(--background));
+  --x-color-yellow-500: var(--warning);
+  --x-color-red-900: color-mix(in oklch, var(--destructive) 45%, var(--background));
+  --x-color-red-600: color-mix(in oklch, var(--destructive) 60%, var(--background));
+  --x-color-red-500: var(--destructive);
+  --x-color-blue-900: color-mix(in oklch, var(--primary-text) 45%, var(--background));
+  --x-color-blue-600: color-mix(in oklch, var(--primary-text) 60%, var(--background));
+  --x-color-blue-400: var(--primary-text);
+  --x-color-purple-900: color-mix(in oklch, oklch(0.74 0.18 293) 45%, var(--background));
+  --x-color-purple-400: oklch(0.74 0.18 293);
+  --x-color-purple-600: color-mix(in oklch, oklch(0.74 0.18 293) 60%, var(--background));
 }
 
-/* Nextra borders — make them visible in dark mode */
-.dark .nextra-border {
-  border-color: oklch(1 0 0 / 12%);
+/* Code blocks. Nextra hardcodes `bg-white dark:bg-black` on <pre>; the app's
+   idiom is a muted panel that lifts off the canvas, bordered rather than
+   contrast-punched. */
+.nextra-code pre,
+article pre {
+  background-color: var(--muted) !important;
+  border-radius: var(--radius);
 }
 
-/* Navbar: transparent bg with subtle bottom border */
-.dark nav[class*="nextra"] {
-  border-bottom-color: oklch(1 0 0 / 12%);
+/* Inline code — same muted panel, one step tighter. Nextra tints it with a
+   black/white alpha mix, which reads grey against the warm canvas. */
+article :not(pre) > code.nextra-code {
+  background-color: var(--muted) !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-sm);
 }
 
-/* Sidebar: match the deep background */
-.dark aside {
-  border-color: oklch(1 0 0 / 12%);
+/* Nextra's copy/word-wrap buttons sit on top of the code panel. */
+.nextra-code button {
+  background-color: var(--card);
+  border-color: var(--border);
 }
 
-/* Code blocks: darker bg with visible border */
-.dark pre {
-  background-color: oklch(0.06 0 0) !important;
-  border: 1px solid oklch(1 0 0 / 10%);
-  border-radius: 0.5rem;
+/* Tables — match the app's bordered, muted-header table. */
+article table :is(th, td) {
+  border-color: var(--border);
+}
+article thead th {
+  background-color: var(--muted);
 }
 
-/* Inline code */
-.dark :not(pre) > code {
-  background-color: oklch(0.14 0 0);
-  border: 1px solid oklch(1 0 0 / 8%);
-  border-radius: 0.25rem;
+/* Blockquotes and rules. */
+article blockquote {
+  border-color: var(--primary);
+  color: var(--muted-foreground);
+}
+article hr {
+  border-color: var(--border);
 }
 
-/* Table borders */
-.dark th,
-.dark td {
-  border-color: oklch(1 0 0 / 12%);
+/* Search + inputs. Nextra ships a borderless field tinted with a black/white
+   alpha wash; the app's inputs are a recessed muted panel inside a 1px
+   `--input` border, which is what this restores. */
+input[type="search"],
+input[type="text"] {
+  background-color: var(--muted);
+  border: 1px solid var(--input);
+  color: var(--foreground);
+  border-radius: var(--radius);
 }
 
-/* Search input */
-.dark input[type="search"],
-.dark input[type="text"] {
-  background-color: oklch(0.1 0 0);
-  border-color: oklch(1 0 0 / 15%);
+/* Interactive affordances, matching the app's global cursor rule. */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[role="tab"]:not(:disabled),
+[role="option"]:not(:disabled),
+summary,
+a[href] {
+  cursor: pointer;
 }
 
-/* TOC and sidebar links hover */
-.dark a:hover {
-  color: oklch(0.98 0 0);
+/* Brand-tinted scrollbars, same treatment as the app. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent) transparent;
 }
-
-/* Callout/card-like elements */
-.dark [class*="callout"],
-.dark [class*="Callout"] {
-  border-color: oklch(1 0 0 / 12%);
-  background-color: oklch(0.1 0 0);
+*::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
 }
-
-/* Blockquotes */
-.dark blockquote {
-  border-color: oklch(1 0 0 / 20%);
-  color: oklch(0.7 0 0);
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-/* Horizontal rules */
-.dark hr {
-  border-color: oklch(1 0 0 / 12%);
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--primary) 45%, transparent);
+  border-radius: 8px;
 }
-
-/* Footer wrapper — override Nextra's dark:bg-neutral-900 */
-.dark div:has(> footer) {
-  background-color: #000 !important;
-}
-
-/* Footer */
-.dark footer {
-  border-top: 1px solid oklch(1 0 0 / 12%);
-  color: oklch(0.5 0 0);
-}
-
-.dark footer a {
-  color: oklch(0.6 0 0);
-  transition: color 0.15s ease;
-}
-
-.dark footer a:hover {
-  color: oklch(0.95 0 0);
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--primary) 70%, transparent);
 }
