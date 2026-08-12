@@ -19,6 +19,7 @@ Most monitoring tools are either too bloated or too basic. exit1 sits in the swe
 | **Website** | [exit1.dev](https://exit1.dev) — Learn about the platform | [Repo](https://github.com/Mopra/exit1.dev.website) |
 | **Monitor App** | [app.exit1.dev](https://app.exit1.dev) — Sign in and manage your checks | [Repo](https://github.com/Mopra/exit1.dev) |
 | **Documentation** | [docs.exit1.dev](https://docs.exit1.dev) — Guides, API reference, and setup instructions | [Repo](https://github.com/Mopra/exit1.dev.docs) |
+| **MCP Server** | [`exit1-mcp`](https://www.npmjs.com/package/exit1-mcp) — Set up and query monitoring from Claude, Cursor or any AI assistant | [Repo](https://github.com/Mopra/exit1.dev.mcp) |
 
 ## What's in this repo?
 
