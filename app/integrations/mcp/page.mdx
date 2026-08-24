@@ -11,14 +11,15 @@ There are two ways to connect:
 
 ## Hosted setup (recommended)
 
-Run both commands in your terminal **before starting a session**. MCP clients load servers at startup, so a server added mid-conversation isn't usable until you restart the client.
+Run this in your terminal **before starting a session**. MCP clients load servers at startup, so a server added mid-conversation isn't usable until you restart the client.
 
 ```bash
-claude mcp add --transport http exit1 https://app.exit1.dev/mcp/v1
-claude mcp login exit1
+claude mcp add --transport http exit1 https://app.exit1.dev/mcp/v1 && claude mcp login exit1
 ```
 
-The second command opens your browser to sign in. No Exit1 account yet? Sign-up happens right there in the flow. On Claude Code versions without `claude mcp login`, start `claude` and authenticate via `/mcp` instead.
+The login opens your browser to sign in. No Exit1 account yet? Sign-up happens right there in the flow.
+
+It's one chained line on purpose: pasting the commands as two separate lines is unreliable in some terminals (cmd.exe drops the second line). Two caveats: in old Windows PowerShell (5.1), where `&&` doesn't parse, run the two halves one at a time; and on Claude Code versions without `claude mcp login`, run the add command alone, then start `claude` and authenticate via `/mcp`.
 
 Other clients: add `https://app.exit1.dev/mcp/v1` as an HTTP MCP server wherever your tool configures MCP, restart it, and complete the sign-in when prompted.
 
