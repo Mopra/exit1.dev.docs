@@ -116,17 +116,28 @@ respectively.
 
 ## Upgrading
 
-1. Navigate to **Settings** > **Billing**
-2. Click **Change Plan** and pick a tier
-3. Enter your payment information
-4. Your account is upgraded immediately
+1. Open **Billing** from the account menu, or go straight to
+   [app.exit1.dev/billing?tab=plans](https://app.exit1.dev/billing?tab=plans)
+2. On the **Plans** tab, pick a cadence with the Monthly / Annual toggle
+3. Click **Upgrade to Indie / Nano / Pro** on the plan you want
+4. Confirm at checkout. Your account is upgraded immediately
+
+If you already pay for a plan, checkout credits the unused remainder of your
+current billing period against the new plan, so you only pay the difference.
+
+## Switching between monthly and annual
+
+On the **Plans** tab, flip the Monthly / Annual toggle. Your current plan's card
+changes its button to **Switch to annual** (or **Switch to monthly**). Annual
+saves roughly 20%.
 
 ## Downgrading
 
-1. Navigate to **Settings** > **Billing**
-2. Click **Change Plan** and pick a lower tier
-3. Your plan changes at the end of the current billing period
-4. Resources above the new tier's limits are **paused, never deleted**
+1. Open the **Plans** tab in **Billing**
+2. Click **Downgrade to** the plan you want
+3. Read the summary of what changes, then confirm
+4. Your plan changes at the end of the current billing period
+5. Resources above the new tier's limits are **paused, never deleted**
 
 On a downgrade, exit1 prunes to the new plan's caps rather than switching
 everything off: the newest monitors within your new cap keep running, checks
@@ -134,3 +145,11 @@ beyond it are disabled (not deleted), check intervals are widened to the new
 floor, and extra webhooks, API keys and status pages are disabled. Status-page
 branding and pinned regions are cleared if the new plan doesn't include them.
 Everything comes back if you re-subscribe.
+
+## Cancelling
+
+Cancelling drops you to Free rather than to a cheaper paid plan. On the
+**Plans** tab, click **Cancel subscription** on the Free card, or use **Cancel
+subscription** on the Billing overview. You keep paid features until the end of
+the billing period. The same pruning rules as a downgrade apply once you land
+on Free.
