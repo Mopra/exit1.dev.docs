@@ -60,13 +60,13 @@ exit1.dev never sends every event at the priority you picked. It sorts events in
 | Event class | Events | Ceiling |
 |---|---|---|
 | **Critical** | `website_down`, `website_error`, `ssl_error`, `domain_expired`, `dns_record_missing`, `dns_resolution_failed` | May reach **Emergency (2)** |
-| **Warning** | `ssl_warning`, `domain_expiring`, `dns_record_changed` | Capped at **High (1)** |
+| **Warning** | `ssl_warning`, `domain_expiring`, `dns_record_changed` | Capped at **High (1)** on the integration default; **Normal (0)** with an explicit severity |
 | **Recovery** | `website_up`, `domain_renewed` | Capped at **Normal (0)** |
 
 Three consequences worth internalising:
 
 - Only a real outage can ever page you at **Emergency** (the priority that repeats until you acknowledge).
-- Only an outage or a warning can bypass **quiet hours** — "your certificate expires in 3 days" is allowed to cut through, "your site is back up" is not.
+- With an explicit check severity, only a critical event can bypass **quiet hours**: "your certificate expires in 30 days" waits for morning, and the loud moment comes when it actually expires (`ssl_error` at the check's full severity). On the integration default, a warning may still ride at High if your default is High or Emergency.
 - A recovery never wakes you, at any setting. Good news is not urgent.
 
 ### Default priority
@@ -91,8 +91,8 @@ Each check has a severity slider under **Alert behavior** in its settings, from 
 
 | Check severity | Critical | Warning | Recovery |
 |---|---|---|---|
-| **P1 — Critical** | **Emergency (2)** | High (1) | Normal (0) |
-| P2 — High | High (1) | High (1) | Normal (0) |
+| **P1 — Critical** | **Emergency (2)** | Normal (0) | Normal (0) |
+| P2 — High | High (1) | Normal (0) | Normal (0) |
 | P3 — Normal | Normal (0) | Normal (0) | Normal (0) |
 | P4 — Low | Low (-1) | Low (-1) | Low (-1) |
 | P5 — Minimal | Lowest (-2) | Lowest (-2) | Lowest (-2) |
@@ -146,6 +146,7 @@ Delete the webhook from exit1.dev. To revoke access on Pushover's side, delete t
 - **Wrong sound or device** — Sound names are case-sensitive (`pushover`, not `Pushover`). Device names must match exactly as shown in your Pushover dashboard.
 - **Critical alerts arrive at Normal priority** — the High floor only applies to checks using the integration default. If the check has an explicit severity of **P3**, Normal is its hard ceiling for every event including outages. Turn **Use default priority** back on for that check, or raise it to P1/P2. Otherwise, confirm the webhook is subscribed to a critical event type (e.g. `website_down`) rather than a warning.
 - **Recoveries arrive at Normal, not High** — intended. A `website_up` notification is capped at Normal at every severity and every default priority, so the all-clear can't bypass quiet hours. Outages are unaffected.
+- **Warnings arrive at Normal on a P1/P2 check** — intended. With an explicit severity, warnings like `ssl_warning` never bypass quiet hours; the event that pages you is the outage or the actual expiry, at the check's full severity. If you want warnings at High, use the integration's default priority (set to High) instead of a per-check severity.
 
 ## Pricing notes
 
