@@ -29,6 +29,16 @@ Firewalls and bot-protection services often filter requests based on the `User-A
 
 If your check is returning errors but the site works fine in a browser, the user agent is likely being blocked.
 
+### Blocked checks are reported as down
+
+A `403` is normally accepted as up, because a login wall still proves the server is reachable. A firewall block page is different: it means our request never reached your origin server, so we could not have seen a real outage behind it. When exit1.dev recognises a Cloudflare block or challenge page, the check is marked **down** with an error like:
+
+```
+Blocked by Cloudflare firewall (HTTP 403): the monitor never reached your origin server.
+```
+
+The fix is to allow the monitor through, using one of the options below. Blocks can also be based on country or network rather than user agent, in which case switching the check to another region or allowing the monitor's IP addresses is the answer.
+
 ## Changing the User Agent
 
 You can override the default user agent by adding a `User-Agent` header in the **Request Headers** field under **Advanced Configuration** (Step 3) when creating or editing a check.
