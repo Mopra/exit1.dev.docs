@@ -18,28 +18,30 @@ PATCH /v1/public/checks/{id}
 
 ## Request Body
 
-All fields are optional. Only include the fields you want to change.
+All fields are optional. Only include the fields you want to change. No `Idempotency-Key` is needed.
 
 | Field | Type | Description |
 |---|---|---|
-| `url` | string | The URL to monitor |
+| `url` | string | The URL, host or domain to monitor. Ignored for `domain` checks |
 | `name` | string | Display name (max 200 characters) |
-| `type` | string | Check type: `website`, `rest_endpoint`, `ping`, `tcp`, `udp`, `dns`, `smtp`, `pop3`, `imap` |
-| `checkFrequency` | number | Check interval in minutes (subject to plan limits) |
-| `checkRegionOverride` | string | Region to run checks from. Currently only `vps-eu-1` is available |
-| `httpMethod` | string | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` |
-| `expectedStatusCodes` | number[] | Expected HTTP status codes |
-| `requestHeaders` | object | Custom request headers as key-value pairs (max 20 entries) |
-| `requestBody` | string | Request body for POST/PUT/PATCH methods (max 64KB) |
-| `responseValidation` | object | Response validation rules |
+| `type` | string | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns` or `heartbeat`. A check can't be converted to or from `domain` |
+| `checkFrequency` | number | Minutes between checks (subject to plan limits) |
+| `checkRegionOverride` | string | Region to run the check from: `vps-eu-1` or `vps-us-1`. Only honored on plans with region choice (Nano and Pro). On other plans the check stays on `vps-eu-1` |
+| `httpMethod` | string | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` or `HEAD` |
+| `expectedStatusCodes` | number[] | Status codes that count as up, integers from 100 to 599 |
+| `requestHeaders` | object | Custom request headers as string key-value pairs (max 20 entries). Replaces the existing headers. Same restrictions as [Create Check](/api-reference/create-check#request-body) |
+| `requestBody` | string | Request body (max 65,536 characters). Must be valid JSON for `rest_endpoint` checks using `POST`, `PUT` or `PATCH` |
+| `responseValidation` | object | [Response validation rules](/api-reference/create-check#response-validation). Replaces the existing rules |
+| `redirectValidation` | object \| null | For `redirect` checks: `{ "expectedTarget": "...", "matchMode": "contains" }`, where `matchMode` is `contains` or `exact`. Send `null` to clear it |
+| `maxRedirects` | integer \| null | Maximum redirects to follow (0 to 10). Send `null` to clear it |
 | `cacheControlNoCache` | boolean | Send `Cache-Control: no-cache` header |
 | `immediateRecheckEnabled` | boolean | Enable immediate recheck on failure |
-| `responseTimeLimit` | number | Max response time in milliseconds |
-| `downConfirmationAttempts` | number | Consecutive failures before marking as down (1-99) |
-| `pingPackets` | number | Number of ping packets for `ping` type checks (1-5) |
-| `timezone` | string | Timezone for the check |
+| `responseTimeLimit` | number | Max response time in milliseconds (max 30,000) |
+| `downConfirmationAttempts` | number | Consecutive failures before the check is marked down (1 to 99) |
+| `pingPackets` | number | Number of ping packets for `ping` checks (1 to 5). Other values are ignored |
+| `timezone` | string | IANA timezone for the check. Send an empty string or `null` to clear it |
 
-> **Note:** When you update fields that affect check behavior (URL, type, frequency, headers, etc.), the check schedule is reset and the next check runs immediately.
+> **Note:** When you update fields that affect check behavior (URL, type, frequency, method, status codes, headers, body, validation, redirects, region, cache control or ping packets), the check schedule is reset and the next check runs immediately.
 
 ## Response
 
@@ -53,14 +55,17 @@ All fields are optional. Only include the fields you want to change.
 }
 ```
 
+The updated check is not returned. Use [Get Check](/api-reference/get-check) to read it.
+
 ## Error Responses
 
 | Status | Description |
 |---|---|
-| 400 | Invalid field value or validation failure |
-| 403 | API key missing `checks:write` scope, or check belongs to another user |
+| 400 | Invalid check ID, invalid field value, validation failure, or an attempted conversion to or from `domain` |
+| 403 | API key missing `checks:write` scope, or the check belongs to another account |
 | 404 | Check not found |
 | 409 | A check already exists for this URL |
+| 429 | Rate limit exceeded |
 
 ## Code Examples
 

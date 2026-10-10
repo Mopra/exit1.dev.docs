@@ -18,98 +18,60 @@ GET /v1/public/checks/{id}/stats
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `from` | string (ISO 8601) | 24 hours ago | Start date for statistics (single-range mode) |
-| `to` | string (ISO 8601) | now | End date for statistics |
-| `ranges` | string | — | Comma-separated predefined ranges for [multi-range mode](#multi-range-mode) (e.g. `1d,7d,30d`) |
+| `from` | string or number | 90 days ago | Start of the window (single-range mode). ISO 8601 or a Unix timestamp in seconds or milliseconds |
+| `to` | string or number | now | End of the window. Same formats as `from` |
+| `ranges` | string | - | Comma-separated predefined ranges for [multi-range mode](#multi-range-mode), for example `1d,7d,30d` |
 
 This endpoint supports two modes:
 
-- **Single-range mode** (default) — Use `from` and `to` to query a custom date range
-- **Multi-range mode** — Use `ranges` to fetch statistics for multiple predefined time windows in a single request
+- **Single-range mode** (default): use `from` and `to` to query a custom window
+- **Multi-range mode**: use `ranges` to fetch statistics for several predefined windows in one request
 
-> **Note:** The `from` parameter is ignored when `ranges` is provided. The `to` parameter can be used with either mode to set the end date.
+> **Note:** `from` is ignored when `ranges` is provided. `to` works in either mode and sets the end of the window.
+
+### Lookback Limit
+
+Single-range statistics never look back more than **90 days from now**. If you omit `from`, or pass a `from` older than that, the window starts 90 days ago.
 
 ## Response (Single-Range Mode)
 
 ```json
 {
   "data": {
-    "checkId": "abc123",
-    "period": {
-      "from": "2025-01-14T14:30:00Z",
-      "to": "2025-01-15T14:30:00Z"
-    },
-    "uptime": {
-      "percentage": 99.95,
-      "totalChecks": 720,
-      "successfulChecks": 719,
-      "failedChecks": 1
-    },
-    "responseTime": {
-      "average": 245,
-      "min": 120,
-      "max": 890,
-      "p50": 230,
-      "p90": 410,
-      "p95": 550,
-      "p99": 820
-    },
-    "timing": {
-      "dns": { "average": 12, "p95": 25 },
-      "connect": { "average": 25, "p95": 45 },
-      "tls": { "average": 45, "p95": 80 },
-      "ttfb": { "average": 150, "p95": 350 }
-    },
-    "incidents": {
-      "count": 1,
-      "totalDowntime": 300,
-      "mtbf": 86100,
-      "mttr": 300
-    }
+    "totalChecks": 25920,
+    "onlineChecks": 25901,
+    "offlineChecks": 19,
+    "uptimePercentage": 99.93,
+    "totalDurationMs": 7776000000,
+    "onlineDurationMs": 7770556800,
+    "offlineDurationMs": 5443200,
+    "responseSampleCount": 25901,
+    "avgResponseTime": 245.37,
+    "minResponseTime": 120,
+    "maxResponseTime": 890
   }
 }
 ```
 
 ## Response Fields
 
-### Uptime
+The same fields are returned in single-range mode and for each range in multi-range mode.
 
-| Field | Description |
-|---|---|
-| `percentage` | Uptime percentage over the period |
-| `totalChecks` | Total number of check executions |
-| `successfulChecks` | Number of successful checks |
-| `failedChecks` | Number of failed checks |
+| Field | Type | Description |
+|---|---|---|
+| `totalChecks` | number | Number of check results in the window |
+| `onlineChecks` | number | Results with status `online` |
+| `offlineChecks` | number | Confirmed `offline` results, excluding results recorded during maintenance |
+| `uptimePercentage` | number | Time-weighted uptime: `onlineDurationMs / totalDurationMs * 100`. `0` when there is no data |
+| `totalDurationMs` | number | Milliseconds of the window covered by data. Coverage starts at the first result in the window, or at the start of the window if an earlier result exists |
+| `onlineDurationMs` | number | Milliseconds not spent in a confirmed outage. Degraded time and maintenance time count here |
+| `offlineDurationMs` | number | Milliseconds spent in a confirmed outage outside maintenance |
+| `responseSampleCount` | number | Results with a recorded response time above 0 |
+| `avgResponseTime` | number | Mean response time in milliseconds (not rounded). `0` when there are no samples |
+| `minResponseTime` | number | Fastest response in milliseconds. `0` when there are no samples |
+| `maxResponseTime` | number | Slowest response in milliseconds. `0` when there are no samples |
 
-### Response Time (in milliseconds)
-
-| Field | Description |
-|---|---|
-| `average` | Mean response time |
-| `min` | Fastest response |
-| `max` | Slowest response |
-| `p50` | 50th percentile (median) |
-| `p90` | 90th percentile |
-| `p95` | 95th percentile |
-| `p99` | 99th percentile |
-
-### Timing Breakdown (in milliseconds)
-
-| Field | Description |
-|---|---|
-| `dns` | DNS resolution time |
-| `connect` | TCP connection time |
-| `tls` | TLS handshake time |
-| `ttfb` | Time to first byte |
-
-### Incidents
-
-| Field | Description |
-|---|---|
-| `count` | Number of downtime incidents |
-| `totalDowntime` | Total downtime in seconds |
-| `mtbf` | Mean time between failures in seconds |
-| `mttr` | Mean time to recovery in seconds |
+The response does not include percentiles, DNS/TLS timing breakdowns or incident metrics such as MTBF and MTTR.
 
 ## Multi-Range Mode
 
@@ -143,7 +105,7 @@ You can request up to **5 ranges** per request.
       "onlineDurationMs": 84240000,
       "offlineDurationMs": 2160000,
       "responseSampleCount": 714,
-      "avgResponseTime": 245,
+      "avgResponseTime": 245.1,
       "minResponseTime": 120,
       "maxResponseTime": 890
     },
@@ -156,7 +118,7 @@ You can request up to **5 ranges** per request.
       "onlineDurationMs": 596332800,
       "offlineDurationMs": 8467200,
       "responseSampleCount": 4968,
-      "avgResponseTime": 252,
+      "avgResponseTime": 252.8,
       "minResponseTime": 98,
       "maxResponseTime": 1240
     }
@@ -166,21 +128,11 @@ You can request up to **5 ranges** per request.
 
 ### Multi-Range Response Fields
 
-The response is a dictionary keyed by range name. Each entry contains:
+The response is an object keyed by range name. Each entry has the same fields as the [single-range response](#response-fields).
 
-| Field | Description |
-|---|---|
-| `totalChecks` | Total number of check executions in the range |
-| `onlineChecks` | Number of successful checks |
-| `offlineChecks` | Number of failed checks |
-| `uptimePercentage` | Uptime percentage calculated from continuous duration |
-| `totalDurationMs` | Total time span of the range in milliseconds |
-| `onlineDurationMs` | Total online duration in milliseconds |
-| `offlineDurationMs` | Total offline duration in milliseconds |
-| `responseSampleCount` | Number of checks with valid response time data |
-| `avgResponseTime` | Average response time in milliseconds |
-| `minResponseTime` | Minimum response time in milliseconds |
-| `maxResponseTime` | Maximum response time in milliseconds |
+Each range ends at `to` (or now) and starts the range length before it. Ranges longer than one day (`7d`, `30d`, `60d`, `90d`) are computed from daily summaries, so their start snaps to a UTC midnight and can include a few extra hours of data.
+
+Results for requests without `to` may be cached for up to an hour.
 
 ### Multi-Range Errors
 

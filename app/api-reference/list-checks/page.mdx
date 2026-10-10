@@ -12,11 +12,13 @@ GET /v1/public/checks
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `limit` | integer | 25 | Number of results per page (1-100) |
+| `limit` | integer | 25 | Number of results per page (max 100) |
 | `page` | integer | 1 | Page number for offset pagination |
-| `cursor` | string | - | Cursor for cursor-based pagination |
-| `status` | string | - | Filter by status: `up`, `down`, `paused` |
-| `includeTotal` | boolean | false | Include total count in response |
+| `cursor` | string | - | `nextCursor` value from a previous response, for cursor pagination |
+| `status` | string | `all` | Filter by status: `all`, `online`, `offline`, `degraded` or `unknown`. Any other value returns `400` |
+| `includeTotal` | boolean | `true` | Set to `false` to skip counting. `total` and `totalPages` are then `null` |
+
+Checks are returned in the same order as in your dashboard.
 
 ## Pagination
 
@@ -33,11 +35,11 @@ curl -H "X-Api-Key: ek_live_..." \
 
 ### Cursor Pagination
 
-Use the `cursor` value from the previous response for more efficient pagination:
+Pass the `nextCursor` value from the previous response as `cursor`. When `cursor` is set, `page` is ignored:
 
 ```bash
 curl -H "X-Api-Key: ek_live_..." \
-  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?cursor=abc123&limit=10"
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?cursor=eyJvcmRlckluZGV4IjoxMDAwLCJpZCI6ImFiYzEyMyJ9&limit=10"
 ```
 
 ## Response
@@ -49,33 +51,68 @@ curl -H "X-Api-Key: ek_live_..." \
       "id": "abc123",
       "name": "Production Website",
       "url": "https://example.com",
+      "status": "online",
+      "lastChecked": 1736951400000,
+      "responseTime": 245,
+      "lastStatusCode": 200,
       "type": "website",
-      "method": "GET",
-      "status": "up",
-      "interval": 120,
-      "region": "us-central",
-      "expectedStatus": 200,
-      "lastChecked": "2025-01-15T14:30:00Z",
-      "lastResponseTime": 245,
-      "uptime": 99.95,
-      "ssl": {
+      "checkFrequency": 5,
+      "region": "vps-eu-1",
+      "folder": null,
+      "severity": null,
+      "lastError": null,
+      "disabled": false,
+      "maintenanceMode": false,
+      "maintenanceUntil": null,
+      "maintenanceScheduledStart": null,
+      "maintenanceRecurring": null,
+      "sslCertificate": {
         "valid": true,
         "issuer": "Let's Encrypt",
-        "expiresAt": "2025-04-15T00:00:00Z"
+        "subject": "example.com",
+        "validFrom": 1736899200000,
+        "validTo": 1744675200000,
+        "daysUntilExpiry": 89,
+        "lastChecked": 1736944200000
       },
-      "createdAt": "2024-06-01T10:00:00Z"
+      "domainExpiry": null,
+      "createdAt": 1717236000000,
+      "updatedAt": 1736951400000
     }
   ],
   "meta": {
     "page": 1,
     "limit": 25,
     "total": 12,
-    "cursor": "next_cursor_value"
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false,
+    "nextCursor": "eyJvcmRlckluZGV4IjoxMDAwLCJpZCI6ImFiYzEyMyJ9"
   }
 }
 ```
 
-> **Note:** `status` updates in real time on every state change. The timing fields (`lastChecked`, `lastResponseTime`) are synced on status changes and at least once every 24 hours — for a check that has been stable for a while, `lastChecked` reflects the last sync, not the last probe. For per-probe timing data, use the [check history](/api-reference/check-history) endpoint.
+Each item in `data` is a check object. See [Get Check](/api-reference/get-check#check-object) for every field. All timestamps are Unix epoch milliseconds.
+
+### `meta`
+
+| Field | Type | Description |
+|---|---|---|
+| `page` | number | Current page number |
+| `limit` | number | Results per page |
+| `total` | number \| null | Total matching checks. `null` when `includeTotal=false` |
+| `totalPages` | number \| null | Total pages at this `limit`. `null` when `includeTotal=false` |
+| `hasNext` | boolean | Whether another page exists |
+| `hasPrev` | boolean | Whether a previous page exists. Always `true` when `cursor` is set |
+| `nextCursor` | string \| null | Pass as `cursor` to fetch the next page. `null` when the page is empty |
+
+> **Note:** `status` updates in real time on every state change. The timing fields (`lastChecked`, `responseTime`, `lastStatusCode`) are synced on status changes and at least once every 24 hours. For a check that has been stable for a while, `lastChecked` reflects the last sync, not the last probe. For per-probe data, use the [check history](/api-reference/check-history) endpoint.
+
+## Error Responses
+
+| Status | Body | Cause |
+|---|---|---|
+| 400 | `{"error": "Invalid status. Allowed: all, online, offline, degraded, unknown"}` | Unsupported `status` value |
 
 ## Code Examples
 
@@ -83,7 +120,7 @@ curl -H "X-Api-Key: ek_live_..." \
 
 ```bash
 curl -H "X-Api-Key: ek_live_your_key_here" \
-  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?limit=10&status=up"
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?limit=10&status=offline"
 ```
 
 ### JavaScript

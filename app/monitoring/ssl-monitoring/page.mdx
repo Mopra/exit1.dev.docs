@@ -45,7 +45,13 @@ SSL-related alerts include:
 | Event | Description |
 |---|---|
 | `ssl_error` | Certificate is invalid, expired, or has chain issues |
-| `ssl_warning` | Certificate is approaching expiration |
+| `ssl_warning` | Certificate is approaching expiration (repeats at 30, 14, 7, 3 and 1 days left) |
+
+### Expiry Reminders
+
+An expiring certificate doesn't get a single warning and then silence. exit1.dev sends an `ssl_warning` each time the certificate crosses a reminder point: **30, 14, 7, 3 and 1 days** before expiry. If the certificate then expires or becomes invalid, you get an `ssl_error`.
+
+Renewing the certificate stops the reminders. A check that is first seen inside the window (say, 10 days left) starts at the nearest reminder point and continues from there.
 
 These alerts are sent through your configured alert channels (email, SMS, webhooks, Slack, Discord).
 

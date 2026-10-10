@@ -9,63 +9,84 @@ The exit1.dev API uses standard HTTP status codes and returns structured error r
 | 200 | OK | Request succeeded |
 | 201 | Created | Resource created successfully (POST) |
 | 400 | Bad Request | Invalid request parameters or body |
-| 401 | Unauthorized | Missing or invalid API key |
-| 403 | Forbidden | Access denied — missing [scope](/api-reference/scopes) or resource not owned |
-| 404 | Not Found | Resource not found |
+| 401 | Unauthorized | Missing, invalid or disabled credentials |
+| 403 | Forbidden | Missing [scope](/api-reference/scopes), check owned by another account, or feature not on your plan |
+| 404 | Not Found | Resource or route not found |
 | 405 | Method Not Allowed | HTTP method not supported for this endpoint |
-| 409 | Conflict | Duplicate resource (e.g., URL already monitored) or plan limit reached |
-| 422 | Unprocessable | Idempotency key conflict (same key used for a different request) |
+| 409 | Conflict | Duplicate resource (for example URL already monitored) or plan limit reached |
+| 422 | Unprocessable | Malformed `Idempotency-Key`, or the key was used for a different request |
 | 429 | Too Many Requests | Rate limit exceeded |
 | 500 | Internal Server Error | Server-side error |
 
 ## Error Response Format
 
-All error responses follow this structure:
+Every error response is a JSON object with a single `error` string:
 
 ```json
 {
-  "error": "Invalid parameter: limit must be between 1 and 100"
+  "error": "Invalid status. Allowed: all, online, offline, degraded, unknown"
 }
 ```
 
+`429` responses add `retryAfter` and sometimes `quotaLimit` and `quotaReset`. See [Rate Limits](/api-reference/rate-limits#exceeding-limits).
+
 ## Common Errors
+
+### 400 Bad Request
+
+```json
+{
+  "error": "Invalid check ID format"
+}
+```
+
+**Causes:**
+- Check ID contains characters other than letters, digits, `-` and `_`, or is longer than 128 characters
+- Unsupported `status` filter on [List Checks](/api-reference/list-checks)
+- Invalid `ranges` on [Check Stats](/api-reference/check-stats)
+- Missing `Idempotency-Key` on create, or a field that fails validation
 
 ### 401 Unauthorized
 
 ```json
 {
-  "error": "Invalid or missing API key"
+  "error": "Invalid API key"
 }
 ```
 
-**Causes:**
-- Missing `X-Api-Key` header
-- Invalid API key format
-- Revoked API key
+| Message | Cause |
+|---|---|
+| `Missing credentials. Send X-Api-Key or an OAuth Bearer token.` | No `X-Api-Key` or `Authorization: Bearer` header |
+| `Invalid API key` | The key does not exist or was revoked |
+| `API key disabled` | The key exists but is disabled |
+| `Invalid or expired access token` | The OAuth access token is invalid or expired |
 
 ### 403 Forbidden
 
 ```json
 {
-  "error": "API key does not have the required scope: checks:write"
+  "error": "Credential does not have the required scope: checks:write"
 }
 ```
 
 **Causes:**
-- API key missing required [scope](/api-reference/scopes) for the operation
-- Attempting to access a check owned by a different account
+- API key missing the required [scope](/api-reference/scopes) for the operation
+- The check belongs to a different account (`{"error": "Forbidden"}`)
+- The check type is not available on your plan, for example `DNS monitoring requires a paid plan.`
 
 ### 404 Not Found
 
 ```json
 {
-  "error": "Check not found"
+  "error": "Not found"
 }
 ```
 
 **Causes:**
-- The check ID does not exist
-- The check belongs to a different account
+- The check ID does not exist. Read endpoints return `Not found`, write endpoints return `Check not found`
+- The path does not match any endpoint
+
+A check that exists but belongs to another account returns `403`, not `404`.
 
 ### 409 Conflict
 
@@ -77,25 +98,38 @@ All error responses follow this structure:
 
 **Causes:**
 - Duplicate URL when creating or updating a check
-- Maximum check limit reached for your plan
+- The domain is already monitored by another domain check
+- Maximum check limit reached for your plan (`Maximum of 5 checks reached for your plan.`)
 
 ### 422 Unprocessable
 
 ```json
 {
-  "error": "Idempotency key previously used for a different request"
+  "error": "Idempotency key already used for a different request"
 }
 ```
 
-**Cause:** The same `Idempotency-Key` was used with a different HTTP method or path. Use a new key for each distinct request.
+**Causes:**
+- The same `Idempotency-Key` was used with a different HTTP method or path. Use a new key for each distinct request
+- The key is not 1 to 256 letters, digits, hyphens or underscores
 
 ### 429 Too Many Requests
 
 ```json
 {
-  "error": "Rate limit exceeded. Please retry after the reset time.",
-  "retryAfter": 60
+  "error": "Rate limit exceeded. Please try again later.",
+  "retryAfter": 42
 }
 ```
 
-**Cause:** You've exceeded a [rate limit](/api-reference/rate-limits). Wait for the specified retry period.
+**Cause:** You've exceeded a [rate limit](/api-reference/rate-limits). Wait `retryAfter` seconds (also sent as the `Retry-After` header) before retrying.
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Internal error"
+}
+```
+
+**Cause:** An unexpected server-side failure. Retry with backoff.

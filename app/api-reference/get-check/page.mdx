@@ -22,56 +22,120 @@ GET /v1/public/checks/{id}
     "id": "abc123",
     "name": "Production Website",
     "url": "https://example.com",
-    "type": "website",
-    "method": "GET",
-    "status": "up",
-    "interval": 120,
-    "region": "us-central",
-    "expectedStatus": 200,
-    "headers": {},
-    "body": null,
-    "responseValidation": null,
-    "consecutiveFailures": 0,
-    "consecutiveFailureThreshold": 1,
-    "lastChecked": "2025-01-15T14:30:00Z",
-    "lastResponseTime": 245,
+    "status": "online",
+    "lastChecked": 1736951400000,
+    "responseTime": 245,
     "lastStatusCode": 200,
-    "uptime": 99.95,
-    "ssl": {
+    "type": "website",
+    "checkFrequency": 5,
+    "region": "vps-eu-1",
+    "folder": "Production",
+    "severity": 2,
+    "lastError": null,
+    "disabled": false,
+    "maintenanceMode": false,
+    "maintenanceUntil": null,
+    "maintenanceScheduledStart": null,
+    "maintenanceRecurring": null,
+    "sslCertificate": {
       "valid": true,
       "issuer": "Let's Encrypt",
       "subject": "example.com",
-      "validFrom": "2025-01-15T00:00:00Z",
-      "validTo": "2025-04-15T00:00:00Z",
-      "serialNumber": "03:a1:b2:c3:d4",
-      "fingerprint": "AB:CD:EF:12:34:56:78:90"
+      "validFrom": 1736899200000,
+      "validTo": 1744675200000,
+      "daysUntilExpiry": 89,
+      "lastChecked": 1736944200000
     },
-    "domain": {
-      "name": "example.com",
+    "domainExpiry": {
+      "domain": "example.com",
       "registrar": "Namecheap",
-      "expiresAt": "2026-06-01T00:00:00Z",
-      "updatedAt": "2025-01-01T00:00:00Z"
+      "expiryDate": 1780272000000,
+      "daysUntilExpiry": 502
     },
-    "createdAt": "2024-06-01T10:00:00Z",
-    "updatedAt": "2025-01-15T14:30:00Z"
+    "createdAt": 1717236000000,
+    "updatedAt": 1736951400000
   }
 }
 ```
 
-> **Note:** `status` and `consecutiveFailures` update in real time on every state change. The timing fields (`lastChecked`, `lastResponseTime`, `lastStatusCode`) are synced on status changes and at least once every 24 hours — for a check that has been stable for a while, `lastChecked` reflects the last sync, not the last probe. For per-probe timing data, use the [check history](/api-reference/check-history) endpoint.
+All timestamps are **Unix epoch milliseconds** (numbers), not ISO strings.
+
+## Check Object
+
+This is the shape returned by both [List Checks](/api-reference/list-checks) and Get Check.
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Unique check identifier |
+| `name` | string | Display name. Falls back to `url` when no name is set |
+| `url` | string | The monitored URL, host or domain. Heartbeat checks return `heartbeat://<token>` and domain-only checks return `domain://<domain>` |
+| `status` | string | `online`, `offline`, `degraded` or `unknown`. New and re-enabled checks start as `unknown` until their first result |
+| `lastChecked` | number | Epoch ms of the last synced check result. `0` if the check has never run |
+| `responseTime` | number \| null | Response time in milliseconds from the last synced result |
+| `lastStatusCode` | number \| null | HTTP status code from the last synced result |
+| `type` | string | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns`, `heartbeat` or `domain`. Defaults to `website` when unset. Some older checks report the legacy values `api` or `rest` |
+| `checkFrequency` | number \| null | Minutes between checks |
+| `region` | string \| null | Region the check runs from, for example `vps-eu-1` (Frankfurt) or `vps-us-1` (Boston) |
+| `folder` | string \| null | Folder the check is grouped under in the dashboard |
+| `severity` | number \| null | Check severity from `1` (P1, critical) to `5` (P5, minimal). `null` means no severity is set |
+| `lastError` | string \| null | Most recent error message, if any |
+| `disabled` | boolean | `true` if the check is paused |
+| `maintenanceMode` | boolean | `true` while the check is in maintenance mode |
+| `maintenanceUntil` | number \| null | Epoch ms when the current maintenance window ends. `null` when not in maintenance or when the window has no end |
+| `maintenanceScheduledStart` | number \| null | Epoch ms of an upcoming one-time maintenance window |
+| `maintenanceRecurring` | object \| null | Recurring maintenance schedule (see below) |
+| `sslCertificate` | object \| null | Last observed SSL certificate (see below). `null` for non-HTTPS checks or before the first observation |
+| `domainExpiry` | object \| null | Domain expiry data (see below). `null` unless [Domain Intelligence](/domain-intelligence) is enabled for the check |
+| `lastPingAt` | number \| null | **Heartbeat checks only.** Epoch ms of the last received ping, `null` if none yet. The field is absent for other check types |
+| `createdAt` | number | Epoch ms when the check was created |
+| `updatedAt` | number | Epoch ms of the last configuration change |
+
+There is no `uptime` field on the check object. Use [Check Stats](/api-reference/check-stats) for uptime percentages.
+
+### `sslCertificate`
+
+| Field | Type | Description |
+|---|---|---|
+| `valid` | boolean | Whether the certificate is currently valid |
+| `issuer` | string | Certificate Authority |
+| `subject` | string | Domain the certificate is issued for |
+| `validFrom` | number | Epoch ms when the certificate became valid |
+| `validTo` | number | Epoch ms when the certificate expires |
+| `daysUntilExpiry` | number | Days left until `validTo` |
+| `lastChecked` | number | Epoch ms when the certificate was last inspected |
+| `error` | string | Present when the certificate could not be validated |
+
+Fields that were not observed are omitted.
+
+### `domainExpiry`
+
+| Field | Type | Description |
+|---|---|---|
+| `domain` | string \| null | Registered domain being tracked |
+| `registrar` | string \| null | Domain registrar |
+| `expiryDate` | number \| null | Epoch ms when the registration expires |
+| `daysUntilExpiry` | number \| null | Days left until `expiryDate` |
+
+### `maintenanceRecurring`
+
+| Field | Type | Description |
+|---|---|---|
+| `daysOfWeek` | number[] | Days the window repeats on (`0` = Sunday through `6` = Saturday) |
+| `startTimeMinutes` | number | Start time in minutes after midnight, in `timezone` |
+| `durationMinutes` | number | Window length in minutes |
+| `timezone` | string | IANA timezone, for example `Europe/Copenhagen` |
+| `reason` | string \| null | Optional note |
+| `createdAt` | number | Epoch ms when the schedule was created |
+
+> **Note:** `status` updates in real time on every state change. The timing fields (`lastChecked`, `responseTime`, `lastStatusCode`) are synced on status changes and at least once every 24 hours. For a check that has been stable for a while, `lastChecked` reflects the last sync, not the last probe. For per-probe data, use the [check history](/api-reference/check-history) endpoint.
 
 ## Error Responses
 
-### Check Not Found
-
-```json
-{
-  "error": {
-    "code": 404,
-    "message": "Check not found"
-  }
-}
-```
+| Status | Body | Cause |
+|---|---|---|
+| 400 | `{"error": "Invalid check ID format"}` | The ID contains characters other than letters, digits, `-` and `_`, or is longer than 128 characters |
+| 403 | `{"error": "Forbidden"}` | The check belongs to another account |
+| 404 | `{"error": "Not found"}` | No check with this ID exists |
 
 ## Code Examples
 

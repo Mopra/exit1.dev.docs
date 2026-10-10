@@ -12,6 +12,10 @@ The exit1.dev API enforces rate limits to ensure fair usage and platform stabili
 | Daily per key | 500 requests |
 | Daily per user | 2,000 requests |
 
+"Per endpoint" means per route, not per check: `GET /v1/public/checks/a` and `GET /v1/public/checks/b` share one bucket. These limits count every request, including writes.
+
+Daily quotas are 24-hour windows that start with the first request counted against them, not calendar days.
+
 ## Write Limits
 
 Write endpoints (`POST`, `PATCH`, `DELETE`) have additional rate limits on top of the read limits:
@@ -32,37 +36,70 @@ Creating checks is further limited to prevent abuse:
 | Per hour | 100 checks |
 | Per day | 500 checks |
 
-These are anti-abuse limits, not plan limits — they apply on every tier and are
+These are anti-abuse limits, not plan limits. They apply on every tier and are
 separate from your plan's monitor cap.
+
+### OAuth (MCP) Sessions
+
+Requests made with an OAuth access token from the [hosted MCP server](/integrations/mcp) use a more generous profile, since agent sessions are interactive:
+
+| Scope | Limit |
+|---|---|
+| Pre-authentication | 20 requests/minute per IP |
+| Per credential | 30 requests/minute |
+| Per endpoint (per credential) | 10 requests/minute |
+| Daily per credential | 1,500 requests |
+| Daily per user | 3,000 requests |
+| Writes per credential | 15/minute, 200/day |
+| Writes per user | 400/day |
 
 ## Rate Limit Headers
 
-Every API response includes rate limit headers:
+Responses include these headers:
 
 | Header | Description |
 |---|---|
-| `X-RateLimit-Limit` | Maximum requests allowed in the current window |
-| `X-RateLimit-Remaining` | Requests remaining in the current window |
-| `X-RateLimit-Reset` | Unix timestamp when the rate limit window resets |
+| `RateLimit-Limit` | Maximum requests allowed in the current window |
+| `RateLimit-Remaining` | Requests remaining in the current window |
+| `RateLimit-Reset` | **Seconds** until the current window resets (not a timestamp) |
+| `RateLimit` | The same three values combined, for example `limit=1, remaining=0, reset=42` |
+| `Retry-After` | Seconds to wait before retrying. Only sent on `429` responses |
+
+On successful requests the headers describe the per-endpoint limit. On a `429` they describe the limit that was exceeded.
 
 ## Exceeding Limits
 
-When you exceed a rate limit, the API returns a `429 Too Many Requests` response:
+When you exceed a rate limit, the API returns a `429 Too Many Requests` response with a `retryAfter` field (seconds):
 
 ```json
 {
-  "error": "Rate limit exceeded. Please retry after the reset time.",
-  "retryAfter": 60
+  "error": "Rate limit exceeded. Please try again later.",
+  "retryAfter": 42
 }
 ```
 
-The `retryAfter` field indicates how many seconds to wait before making another request.
+When a daily request quota is exceeded, the body also includes the quota and when it resets (epoch ms):
+
+```json
+{
+  "error": "Daily quota exceeded for this credential. Limit: 500 requests/day. Resets at midnight UTC.",
+  "quotaLimit": 500,
+  "quotaReset": 1736985600000,
+  "retryAfter": 31200
+}
+```
+
+Rely on `quotaReset` (or `retryAfter`) for the actual reset time: the window ends 24 hours after it started.
+
+Write limit `429`s include `retryAfter` but not `quotaLimit` or `quotaReset`. The [check creation limits](#check-creation-limits) return only an `error` message.
 
 ## Best Practices
 
 - Cache API responses locally when possible
 - Implement exponential backoff when receiving 429 responses
-- Monitor the `X-RateLimit-Remaining` header to stay within limits
+- Honor `Retry-After` (or `retryAfter` in the body) instead of retrying blindly
+- Monitor the `RateLimit-Remaining` header to stay within limits
 - Spread requests evenly over time rather than bursting
-- Use cursor-based pagination to reduce the number of requests needed
+- Use `limit=100` on list requests to reduce the number of pages you fetch
+- Use `ranges=` on the stats endpoint to fetch several windows in one request
 - Use idempotency keys when retrying failed create requests

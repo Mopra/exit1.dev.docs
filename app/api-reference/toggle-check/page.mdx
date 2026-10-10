@@ -1,6 +1,6 @@
 # Toggle Check
 
-Enable or disable a monitoring check. Disabling a check pauses all monitoring and records the event in check history. Enabling a check resumes monitoring immediately.
+Enable or disable a monitoring check. Disabling a check pauses all monitoring and records the event in check history. Enabling a check resets its status to `unknown` and runs the next check immediately.
 
 **Required scope:** `checks:write`
 
@@ -53,9 +53,10 @@ When enabling:
 
 | Status | Description |
 |---|---|
-| 400 | `disabled` field missing or not a boolean |
-| 403 | API key missing `checks:write` scope, or check belongs to another user |
+| 400 | Invalid check ID, `disabled` missing or not a boolean, or `reason` not a string of at most 500 characters |
+| 403 | API key missing `checks:write` scope, or the check belongs to another account |
 | 404 | Check not found |
+| 429 | Rate limit exceeded |
 
 ## Code Examples
 

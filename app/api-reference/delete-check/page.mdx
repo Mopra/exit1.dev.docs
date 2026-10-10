@@ -32,8 +32,10 @@ DELETE /v1/public/checks/{id}
 
 | Status | Description |
 |---|---|
-| 403 | API key missing `checks:delete` scope, or check belongs to another user |
+| 400 | Invalid check ID format |
+| 403 | API key missing `checks:delete` scope, or the check belongs to another account |
 | 404 | Check not found |
+| 429 | Rate limit exceeded |
 
 ## Code Examples
 

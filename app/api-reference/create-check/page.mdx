@@ -16,28 +16,40 @@ POST /v1/public/checks
 |---|---|---|
 | `X-Api-Key` | Yes | Your API key |
 | `Content-Type` | Yes | Must be `application/json` |
-| `Idempotency-Key` | Yes | Unique string to prevent duplicate creation (max 256 characters) |
+| `Idempotency-Key` | Yes | Unique key to prevent duplicate creation: 1 to 256 letters, digits, hyphens or underscores |
 
 ## Request Body
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `url` | string | Yes | The URL to monitor. Not required for `heartbeat` checks — exit1 generates a unique ping URL automatically. |
-| `name` | string | No | Display name (max 200 characters, defaults to URL) |
-| `type` | string | No | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `dns`, `websocket`, `heartbeat`, `domain` (default: `website`). Use `domain` to track only domain-expiry (no uptime probe) — pass a bare domain (e.g. `example.com`) as `url`. Requires Nano+ tier. |
-| `checkFrequency` | number | No | Check interval in minutes (default: 5, subject to plan limits) |
-| `checkRegionOverride` | string | No | Region to run checks from. Currently only `vps-eu-1` is available |
-| `httpMethod` | string | No | HTTP method for `website` and `rest_endpoint` types: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` (default: `GET`) |
-| `expectedStatusCodes` | number[] | No | Expected HTTP status codes (default: `[200]`) |
-| `requestHeaders` | object | No | Custom request headers as key-value pairs (max 20 entries) |
-| `requestBody` | string | No | Request body for POST/PUT/PATCH methods (max 64KB, must be valid JSON) |
+| `url` | string | Yes | The URL, host or domain to monitor. Not required for `heartbeat` checks: exit1 generates a unique ping URL automatically |
+| `name` | string | No | Display name (max 200 characters, defaults to the URL) |
+| `type` | string | No | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns`, `heartbeat` or `domain` (default: `website`). Unrecognized values fall back to `website`. `dns` requires a paid plan. `domain` tracks domain expiry only (no uptime probe), takes a bare domain such as `example.com` as `url`, and requires Nano or Pro |
+| `checkFrequency` | number | No | Minutes between checks (default: 5, subject to plan limits) |
+| `checkRegionOverride` | string | No | Region to run the check from: `vps-eu-1` (Frankfurt) or `vps-us-1` (Boston). Only honored on plans with region choice (Nano and Pro). On other plans the check always runs from `vps-eu-1` |
+| `httpMethod` | string | No | HTTP method for `website`, `rest_endpoint` and `redirect` checks: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` or `HEAD` (default: `GET`) |
+| `expectedStatusCodes` | number[] | No | Status codes that count as up, integers from 100 to 599. Defaults depend on `type` (see below) |
+| `requestHeaders` | object | No | Custom request headers as string key-value pairs (max 20 entries, values max 2048 characters). `Host`, `Authorization`, `Cookie`, `Set-Cookie`, `X-Forwarded-For`, `X-Real-IP`, `Proxy-Authorization`, `Transfer-Encoding` and `Content-Length` are rejected |
+| `requestBody` | string | No | Request body (max 65,536 characters). Must be valid JSON for `rest_endpoint` checks using `POST`, `PUT` or `PATCH` |
 | `responseValidation` | object | No | Response validation rules (see below) |
+| `redirectValidation` | object | No | For `redirect` checks: `{ "expectedTarget": "https://...", "matchMode": "contains" }`. `matchMode` is `contains` (default) or `exact` |
+| `maxRedirects` | integer | No | Maximum redirects to follow (0 to 10) |
 | `cacheControlNoCache` | boolean | No | Send `Cache-Control: no-cache` header (default: `false`) |
-| `immediateRecheckEnabled` | boolean | No | Enable immediate recheck on failure (default: `true`) |
-| `responseTimeLimit` | number | No | Max response time in milliseconds before marking as slow |
-| `downConfirmationAttempts` | number | No | Number of consecutive failures before marking as down (1-99) |
-| `pingPackets` | number | No | Number of ping packets for `ping` type checks (1-5) |
-| `timezone` | string | No | Timezone for the check (e.g., `America/New_York`) |
+| `responseTimeLimit` | number | No | Max response time in milliseconds before the result is marked as slow (max 30,000) |
+| `downConfirmationAttempts` | number | No | Consecutive failures before the check is marked down (1 to 99) |
+| `recordTypes` | string[] | No | For `dns` checks: record types to monitor, any of `A`, `AAAA`, `CNAME`, `MX`, `TXT`, `NS`, `SOA` (default: `["A"]`) |
+| `pingPackets` | number | No | Number of ping packets for `ping` checks (1 to 5). Other values are ignored |
+| `timezone` | string | No | IANA timezone for the check (for example `America/New_York`) |
+
+Immediate recheck on failure is always enabled for new checks. Use [Update Check](/api-reference/update-check) to turn it off.
+
+### Default Expected Status Codes
+
+| Check type | Default |
+|---|---|
+| `website` | `200, 201, 202, 204, 301, 302, 303, 307, 308, 401, 403` |
+| `rest_endpoint` | `200, 201, 202, 204, 401, 403` |
+| `redirect` | `301, 302, 303, 307, 308` |
 
 ### Response Validation
 
@@ -45,15 +57,16 @@ The `responseValidation` object supports:
 
 | Field | Type | Description |
 |---|---|---|
-| `containsText` | string[] | Array of strings that must appear in the response body |
-| `jsonPath` | string | JSONPath expression to evaluate |
-| `expectedValue` | string | Expected value at the JSONPath location |
+| `containsText` | string[] | Strings that must appear in the response body (max 10) |
+| `jsonPath` | string | JSONPath expression to evaluate (max 500 characters) |
+| `jsonPathOperator` | string | How to compare the JSONPath result: `equals`, `not_equals`, `contains` or `exists` |
+| `expectedValue` | any | Expected value at the JSONPath location (strings max 1,000 characters) |
 
 ## Idempotency
 
-The `Idempotency-Key` header is **required** for create requests. If you send the same idempotency key within 24 hours, the API returns the original response instead of creating a duplicate check.
+The `Idempotency-Key` header is **required** for create requests. If you send the same key again within 24 hours, the API returns the original status and body instead of creating a duplicate check.
 
-Use any unique string (e.g., a UUID or timestamp). Increment it for each new check you want to create.
+Keys are scoped to your account, not to a single API key. Use any unique value (for example a UUID) and generate a new one for each check you want to create.
 
 ## Response
 
@@ -67,15 +80,17 @@ Use any unique string (e.g., a UUID or timestamp). Increment it for each new che
 }
 ```
 
+Only the new check ID is returned. Use [Get Check](/api-reference/get-check) to read the full check.
+
 ## Error Responses
 
 | Status | Description |
 |---|---|
-| 400 | Invalid request body or validation failure |
-| 403 | API key missing `checks:write` scope |
-| 409 | A check already exists for this URL, or max checks reached |
-| 422 | Idempotency key conflict (same key, different request) |
-| 429 | Rate limit exceeded |
+| 400 | Missing `Idempotency-Key`, invalid request body or validation failure |
+| 403 | API key missing `checks:write` scope, or the check type is not available on your plan |
+| 409 | A check already exists for this URL, the domain is already monitored, or your plan's check limit is reached |
+| 422 | Malformed `Idempotency-Key`, or the key was already used for a different request |
+| 429 | Rate limit exceeded, including the [check creation limits](/api-reference/rate-limits#check-creation-limits) |
 
 ## Code Examples
 

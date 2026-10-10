@@ -1,6 +1,6 @@
 # Check History
 
-Retrieve the execution history for a specific check.
+Retrieve the execution history for a specific check, newest first.
 
 ## Endpoint
 
@@ -18,14 +18,14 @@ GET /v1/public/checks/{id}/history
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `limit` | integer | 25 | Number of results per page (1-100) |
+| `limit` | integer | 25 | Number of results per page (max 200) |
 | `page` | integer | 1 | Page number for offset pagination |
-| `cursor` | string | - | Cursor for cursor-based pagination |
-| `from` | string (ISO 8601) | - | Start date filter |
-| `to` | string (ISO 8601) | - | End date filter |
-| `status` | string | - | Filter by status: `up`, `down`, `error` |
-| `q` | string | - | Search query (searches error messages and response content) |
-| `includeTotal` | boolean | false | Include total count in response |
+| `from` | string or number | - | Only return results at or after this time. ISO 8601 (`2025-01-01T00:00:00Z`) or a Unix timestamp in seconds or milliseconds |
+| `to` | string or number | - | Only return results at or before this time. Same formats as `from` |
+| `status` | string | `all` | Only return results with this exact status, for example `online`, `offline`, `degraded` or `disabled` |
+| `q` | string | - | Case-sensitive substring match against the error message and status |
+
+History is paginated by `page` only. There is no cursor and no total count.
 
 ## Response
 
@@ -35,49 +35,79 @@ GET /v1/public/checks/{id}/history
     {
       "id": "hist_001",
       "checkId": "abc123",
-      "status": "up",
-      "statusCode": 200,
+      "websiteId": "abc123",
+      "timestamp": 1736951400000,
+      "status": "online",
       "responseTime": 245,
-      "region": "us-central",
-      "timing": {
-        "dns": 12,
-        "connect": 25,
-        "tls": 45,
-        "ttfb": 150,
-        "total": 245
-      },
-      "error": null,
-      "createdAt": "2025-01-15T14:30:00Z"
+      "statusCode": 200,
+      "createdAt": 1736951400000
     },
     {
       "id": "hist_002",
       "checkId": "abc123",
-      "status": "down",
+      "websiteId": "abc123",
+      "timestamp": 1736951100000,
+      "status": "offline",
       "statusCode": 503,
-      "responseTime": null,
-      "region": "us-central",
-      "timing": null,
-      "error": "Service Unavailable",
-      "createdAt": "2025-01-15T14:25:00Z"
+      "error": "HTTP 503 Service Unavailable",
+      "createdAt": 1736951100000
     }
   ],
   "meta": {
     "page": 1,
     "limit": 25,
-    "total": 1440,
-    "cursor": "next_cursor_value"
+    "total": null,
+    "totalPages": null,
+    "hasNext": true,
+    "hasPrev": false
   }
 }
 ```
 
+### History Entry
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | History entry identifier |
+| `checkId` | string | The check this result belongs to |
+| `websiteId` | string | **Deprecated.** Same value as `checkId`, kept for older integrations |
+| `timestamp` | number | Epoch ms when the check ran |
+| `status` | string | Result status, for example `online`, `offline`, `degraded` or `disabled` |
+| `responseTime` | number | Response time in milliseconds. Omitted when not recorded |
+| `statusCode` | number | HTTP status code. Omitted when not recorded (for example on TCP checks or connection failures) |
+| `error` | string | Error message. Omitted when the check succeeded |
+| `redirectLocation` | string | Redirect target. Omitted when not recorded |
+| `createdAt` | number | Same value as `timestamp` |
+
+Optional fields are left out of the entry entirely rather than sent as `null`.
+
+### `meta`
+
+| Field | Type | Description |
+|---|---|---|
+| `page` | number | Current page number |
+| `limit` | number | Results per page |
+| `total` | null | Always `null` |
+| `totalPages` | null | Always `null` |
+| `hasNext` | boolean | Whether another page exists |
+| `hasPrev` | boolean | `true` when `page` is greater than 1 |
+
 ## Date Filtering
 
-Filter history by date range using ISO 8601 format:
+Filter history by date range using ISO 8601 or Unix timestamps:
 
 ```bash
 curl -H "X-Api-Key: ek_live_..." \
   "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?from=2025-01-01T00:00:00Z&to=2025-01-31T23:59:59Z"
 ```
+
+## Error Responses
+
+| Status | Body | Cause |
+|---|---|---|
+| 400 | `{"error": "Invalid check ID format"}` | Malformed check ID |
+| 403 | `{"error": "Forbidden"}` | The check belongs to another account |
+| 404 | `{"error": "Not found"}` | No check with this ID exists |
 
 ## Code Examples
 
@@ -85,7 +115,7 @@ curl -H "X-Api-Key: ek_live_..." \
 
 ```bash
 curl -H "X-Api-Key: ek_live_your_key_here" \
-  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?limit=50&status=down"
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks/abc123/history?limit=50&status=offline"
 ```
 
 ### JavaScript
@@ -121,7 +151,7 @@ response = requests.get(
         "limit": 50,
         "from": "2025-01-01T00:00:00Z",
         "to": "2025-01-31T23:59:59Z",
-        "status": "down"
+        "status": "offline"
     }
 )
 history = response.json()

@@ -4,21 +4,27 @@ info:
   description: |
     The exit1.dev API provides programmatic access to your website monitoring data.
 
+    This file covers the read endpoints. Write endpoints (create, update,
+    delete, toggle) are documented at https://docs.exit1.dev/api-reference.
+
     ## Authentication
     All requests must include an `X-Api-Key` header with a valid API key.
-    API access requires a Nano plan subscription.
+    API access is available on all plans.
 
-    ## Rate Limits
+    ## Timestamps
+    All timestamps in responses are Unix epoch milliseconds.
+
+    ## Rate Limits (API keys)
     - Pre-authentication: 20 requests/minute per IP
     - Per API key: 5 requests/minute
     - Per endpoint per key: 1 request/minute
     - Daily per key: 500 requests
     - Daily per user: 2,000 requests
-  version: "1.0.0"
+  version: "1.1.0"
   contact:
     name: exit1.dev Support
     url: https://exit1.dev
-    email: support@exit1.dev
+    email: connect@exit1.dev
 
 servers:
   - url: https://us-central1-exit1-dev.cloudfunctions.net/publicApi
@@ -38,7 +44,7 @@ paths:
       parameters:
         - name: limit
           in: query
-          description: Number of results per page (1-100)
+          description: Number of results per page (max 100)
           schema:
             type: integer
             minimum: 1
@@ -46,47 +52,46 @@ paths:
             default: 25
         - name: page
           in: query
-          description: Page number for offset pagination
+          description: Page number for offset pagination. Ignored when cursor is set.
           schema:
             type: integer
             minimum: 1
             default: 1
         - name: cursor
           in: query
-          description: Cursor for cursor-based pagination
+          description: The nextCursor value from a previous response
           schema:
             type: string
         - name: status
           in: query
-          description: Filter by check status
+          description: Filter by check status. Any other value returns 400.
           schema:
             type: string
             enum:
-              - up
-              - down
-              - paused
+              - all
+              - online
+              - offline
+              - degraded
+              - unknown
+            default: all
         - name: includeTotal
           in: query
-          description: Include total count in response metadata
+          description: Set to false to skip counting; total and totalPages are then null.
           schema:
             type: boolean
-            default: false
+            default: true
       responses:
         "200":
           description: List of checks
           headers:
-            X-RateLimit-Limit:
-              schema:
-                type: integer
-              description: Maximum requests allowed in the current window
-            X-RateLimit-Remaining:
-              schema:
-                type: integer
-              description: Requests remaining in the current window
-            X-RateLimit-Reset:
-              schema:
-                type: integer
-              description: Unix timestamp when the rate limit window resets
+            RateLimit-Limit:
+              $ref: "#/components/headers/RateLimit-Limit"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+            RateLimit-Reset:
+              $ref: "#/components/headers/RateLimit-Reset"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
           content:
             application/json:
               schema:
@@ -97,7 +102,9 @@ paths:
                     items:
                       $ref: "#/components/schemas/Check"
                   meta:
-                    $ref: "#/components/schemas/PaginationMeta"
+                    $ref: "#/components/schemas/CheckListMeta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -115,28 +122,10 @@ paths:
       tags:
         - Checks
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The unique check identifier
-          schema:
-            type: string
+        - $ref: "#/components/parameters/CheckId"
       responses:
         "200":
           description: Check details
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: integer
-              description: Maximum requests allowed in the current window
-            X-RateLimit-Remaining:
-              schema:
-                type: integer
-              description: Requests remaining in the current window
-            X-RateLimit-Reset:
-              schema:
-                type: integer
-              description: Unix timestamp when the rate limit window resets
           content:
             application/json:
               schema:
@@ -144,6 +133,8 @@ paths:
                 properties:
                   data:
                     $ref: "#/components/schemas/Check"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -159,84 +150,50 @@ paths:
     get:
       operationId: getCheckHistory
       summary: Check history
-      description: Retrieve the execution history for a specific check.
+      description: Retrieve the execution history for a specific check, newest first.
       tags:
         - History
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The unique check identifier
-          schema:
-            type: string
+        - $ref: "#/components/parameters/CheckId"
         - name: limit
           in: query
-          description: Number of results per page (1-100)
+          description: Number of results per page (max 200)
           schema:
             type: integer
             minimum: 1
-            maximum: 100
+            maximum: 200
             default: 25
         - name: page
           in: query
-          description: Page number for offset pagination
+          description: Page number
           schema:
             type: integer
             minimum: 1
             default: 1
-        - name: cursor
-          in: query
-          description: Cursor for cursor-based pagination
-          schema:
-            type: string
         - name: from
           in: query
-          description: Start date filter (ISO 8601)
+          description: Only results at or after this time. ISO 8601 or a Unix timestamp in seconds or milliseconds.
           schema:
             type: string
-            format: date-time
         - name: to
           in: query
-          description: End date filter (ISO 8601)
+          description: Only results at or before this time. ISO 8601 or a Unix timestamp in seconds or milliseconds.
           schema:
             type: string
-            format: date-time
         - name: status
           in: query
-          description: Filter by result status
+          description: Only results with this exact status (for example online, offline, degraded, disabled). Defaults to all.
           schema:
             type: string
-            enum:
-              - up
-              - down
-              - error
+            default: all
         - name: q
           in: query
-          description: Search query (searches error messages and response content)
+          description: Case-sensitive substring match against the error message and status
           schema:
             type: string
-        - name: includeTotal
-          in: query
-          description: Include total count in response metadata
-          schema:
-            type: boolean
-            default: false
       responses:
         "200":
           description: Check history entries
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: integer
-              description: Maximum requests allowed in the current window
-            X-RateLimit-Remaining:
-              schema:
-                type: integer
-              description: Requests remaining in the current window
-            X-RateLimit-Reset:
-              schema:
-                type: integer
-              description: Unix timestamp when the rate limit window resets
           content:
             application/json:
               schema:
@@ -247,7 +204,9 @@ paths:
                     items:
                       $ref: "#/components/schemas/HistoryEntry"
                   meta:
-                    $ref: "#/components/schemas/PaginationMeta"
+                    $ref: "#/components/schemas/HistoryMeta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -263,51 +222,51 @@ paths:
     get:
       operationId: getCheckStats
       summary: Check stats
-      description: Retrieve uptime statistics for a specific check.
+      description: |
+        Retrieve uptime statistics for a specific check.
+
+        Single-range mode (default) uses `from` and `to`. The window never
+        starts more than 90 days before now; omitting `from` means 90 days ago.
+
+        Multi-range mode uses `ranges` and returns an object keyed by range
+        name, each value having the Stats shape. `from` is ignored in this mode.
       tags:
         - Statistics
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The unique check identifier
-          schema:
-            type: string
+        - $ref: "#/components/parameters/CheckId"
         - name: from
           in: query
-          description: Start date for statistics (ISO 8601). Defaults to 24 hours ago.
+          description: Start of the window (single-range mode). ISO 8601 or Unix timestamp. Defaults to 90 days ago and is clamped to at most 90 days ago.
           schema:
             type: string
-            format: date-time
         - name: to
           in: query
-          description: End date for statistics (ISO 8601). Defaults to now.
+          description: End of the window. ISO 8601 or Unix timestamp. Defaults to now.
           schema:
             type: string
-            format: date-time
+        - name: ranges
+          in: query
+          description: Comma-separated predefined ranges (max 5). Allowed values are 1h, 6h, 1d, 7d, 30d, 60d, 90d.
+          schema:
+            type: string
+            example: "1d,7d,30d"
       responses:
         "200":
           description: Uptime statistics
-          headers:
-            X-RateLimit-Limit:
-              schema:
-                type: integer
-              description: Maximum requests allowed in the current window
-            X-RateLimit-Remaining:
-              schema:
-                type: integer
-              description: Requests remaining in the current window
-            X-RateLimit-Reset:
-              schema:
-                type: integer
-              description: Unix timestamp when the rate limit window resets
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/Stats"
+                    oneOf:
+                      - $ref: "#/components/schemas/Stats"
+                      - type: object
+                        description: Multi-range result keyed by range name
+                        additionalProperties:
+                          $ref: "#/components/schemas/Stats"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -328,7 +287,37 @@ components:
       description: |
         API key for authentication. Create keys at Settings > API.
         Format: `ek_live_<64 hex characters>`
-        Maximum 2 keys per account.
+
+  parameters:
+    CheckId:
+      name: id
+      in: path
+      required: true
+      description: The unique check identifier (letters, digits, - and _, max 128 characters)
+      schema:
+        type: string
+
+  headers:
+    RateLimit-Limit:
+      description: Maximum requests allowed in the current window
+      schema:
+        type: integer
+    RateLimit-Remaining:
+      description: Requests remaining in the current window
+      schema:
+        type: integer
+    RateLimit-Reset:
+      description: Seconds until the current window resets
+      schema:
+        type: integer
+    RateLimit:
+      description: Combined form, for example "limit=1, remaining=0, reset=42"
+      schema:
+        type: string
+    Retry-After:
+      description: Seconds to wait before retrying (429 responses only)
+      schema:
+        type: integer
 
   schemas:
     Check:
@@ -336,399 +325,269 @@ components:
       properties:
         id:
           type: string
-          description: Unique check identifier
           example: "abc123"
         name:
           type: string
-          description: Check display name
+          description: Display name. Falls back to url when unset.
           example: "Production Website"
         url:
           type: string
-          format: uri
-          description: Monitored URL or host
+          description: Monitored URL, host or domain. Heartbeat checks return heartbeat://<token>, domain checks return domain://<domain>.
           example: "https://example.com"
-        type:
-          type: string
-          enum:
-            - website
-            - api
-            - tcp
-            - udp
-          description: Check type
-          example: "website"
-        method:
-          type: string
-          enum:
-            - GET
-            - POST
-            - PUT
-            - PATCH
-            - DELETE
-            - HEAD
-            - OPTIONS
-          description: HTTP method (for website/api checks)
-          example: "GET"
         status:
           type: string
           enum:
-            - up
-            - down
-            - paused
-          description: Current check status
-          example: "up"
-        interval:
-          type: integer
-          description: Check interval in seconds
-          example: 120
-        region:
-          type: string
-          enum:
-            - us-central
-            - eu-west
-            - asia-southeast
-            - auto
-          description: Monitoring region
-          example: "us-central"
-        expectedStatus:
-          type: integer
-          description: Expected HTTP status code
-          example: 200
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-          description: Custom request headers
-        body:
-          type: string
-          nullable: true
-          description: Request body (for POST/PUT/PATCH)
-        responseValidation:
-          type: object
-          nullable: true
-          properties:
-            type:
-              type: string
-              enum:
-                - jsonpath
-                - contains
-            expression:
-              type: string
-            expectedValue:
-              type: string
-          description: Response validation configuration
-        consecutiveFailures:
-          type: integer
-          description: Current consecutive failure count
-          example: 0
-        consecutiveFailureThreshold:
-          type: integer
-          description: Failures required before alerting
-          example: 1
+            - online
+            - offline
+            - degraded
+            - unknown
+          example: "online"
         lastChecked:
-          type: string
-          format: date-time
-          description: >-
-            Timestamp of the last synced check execution. Synced on status
-            changes and at least once every 24 hours; for a check that has
-            been stable for a while this reflects the last sync, not the
-            last probe. Use the check history endpoint for per-probe data.
-          example: "2025-01-15T14:30:00Z"
-        lastResponseTime:
           type: integer
-          nullable: true
           description: >-
-            Response time in milliseconds from the last synced execution
-            (same freshness semantics as lastChecked)
+            Epoch ms of the last synced result (0 if never checked). Synced on
+            status changes and at least once every 24 hours.
+          example: 1736951400000
+        responseTime:
+          type: [integer, "null"]
+          description: Response time in ms from the last synced result
           example: 245
         lastStatusCode:
-          type: integer
-          nullable: true
-          description: >-
-            HTTP status code from the last synced execution (same freshness
-            semantics as lastChecked)
+          type: [integer, "null"]
+          description: HTTP status code from the last synced result
           example: 200
-        uptime:
-          type: number
-          format: float
-          description: Uptime percentage
-          example: 99.95
-        ssl:
-          type: object
-          nullable: true
+        type:
+          type: string
+          description: Check type. Some older checks report the legacy values api or rest.
+          enum:
+            - website
+            - rest_endpoint
+            - redirect
+            - ping
+            - tcp
+            - udp
+            - websocket
+            - dns
+            - heartbeat
+            - domain
+            - api
+            - rest
+          example: "website"
+        checkFrequency:
+          type: [number, "null"]
+          description: Minutes between checks
+          example: 5
+        region:
+          type: [string, "null"]
+          description: Region the check runs from
+          example: "vps-eu-1"
+        folder:
+          type: [string, "null"]
+        severity:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 5
+          description: 1 (P1, critical) to 5 (P5, minimal); null when unset
+        lastError:
+          type: [string, "null"]
+        disabled:
+          type: boolean
+        maintenanceMode:
+          type: boolean
+        maintenanceUntil:
+          type: [integer, "null"]
+          description: Epoch ms when the current maintenance window ends
+        maintenanceScheduledStart:
+          type: [integer, "null"]
+          description: Epoch ms of an upcoming one-time maintenance window
+        maintenanceRecurring:
+          type: [object, "null"]
+          properties:
+            daysOfWeek:
+              type: array
+              items:
+                type: integer
+            startTimeMinutes:
+              type: integer
+            durationMinutes:
+              type: integer
+            timezone:
+              type: string
+            reason:
+              type: [string, "null"]
+            createdAt:
+              type: integer
+        sslCertificate:
+          type: [object, "null"]
           properties:
             valid:
               type: boolean
-              description: Whether the SSL certificate is valid
             issuer:
               type: string
-              description: Certificate Authority
-              example: "Let's Encrypt"
             subject:
               type: string
-              description: Certificate subject domain
-              example: "example.com"
             validFrom:
-              type: string
-              format: date-time
-              description: Certificate start date
+              type: integer
+              description: Epoch ms
             validTo:
+              type: integer
+              description: Epoch ms
+            daysUntilExpiry:
+              type: integer
+            lastChecked:
+              type: integer
+              description: Epoch ms
+            error:
               type: string
-              format: date-time
-              description: Certificate expiration date
-            serialNumber:
-              type: string
-              description: Certificate serial number
-            fingerprint:
-              type: string
-              description: Certificate fingerprint
-          description: SSL certificate information
-        domain:
-          type: object
-          nullable: true
+        domainExpiry:
+          type: [object, "null"]
+          description: Null unless Domain Intelligence is enabled for the check
           properties:
-            name:
-              type: string
-              description: Domain name
-              example: "example.com"
+            domain:
+              type: [string, "null"]
             registrar:
-              type: string
-              description: Domain registrar
-              example: "Namecheap"
-            expiresAt:
-              type: string
-              format: date-time
-              description: Domain expiration date
-            updatedAt:
-              type: string
-              format: date-time
-              description: Last registration update
-          description: Domain intelligence information
+              type: [string, "null"]
+            expiryDate:
+              type: [integer, "null"]
+              description: Epoch ms
+            daysUntilExpiry:
+              type: [integer, "null"]
+        lastPingAt:
+          type: [integer, "null"]
+          description: Heartbeat checks only (absent for other types). Epoch ms of the last ping.
         createdAt:
-          type: string
-          format: date-time
-          description: Check creation timestamp
+          type: integer
+          description: Epoch ms
         updatedAt:
-          type: string
-          format: date-time
-          description: Last check update timestamp
+          type: integer
+          description: Epoch ms
 
     HistoryEntry:
       type: object
+      description: Optional fields are omitted rather than sent as null.
+      required:
+        - id
+        - checkId
+        - websiteId
+        - timestamp
+        - status
+        - createdAt
       properties:
         id:
           type: string
-          description: History entry identifier
           example: "hist_001"
         checkId:
           type: string
-          description: Associated check ID
           example: "abc123"
+        websiteId:
+          type: string
+          deprecated: true
+          description: Same value as checkId
+          example: "abc123"
+        timestamp:
+          type: integer
+          description: Epoch ms when the check ran
+          example: 1736951400000
         status:
           type: string
-          enum:
-            - up
-            - down
-            - error
-          description: Check result status
-          example: "up"
+          description: Result status, for example online, offline, degraded or disabled
+          example: "online"
+        responseTime:
+          type: number
+          description: Response time in ms
+          example: 245
         statusCode:
           type: integer
-          nullable: true
-          description: HTTP response status code
           example: 200
-        responseTime:
-          type: integer
-          nullable: true
-          description: Response time in milliseconds
-          example: 245
-        region:
-          type: string
-          description: Region where the check ran
-          example: "us-central"
-        timing:
-          type: object
-          nullable: true
-          properties:
-            dns:
-              type: integer
-              description: DNS lookup time in ms
-              example: 12
-            connect:
-              type: integer
-              description: TCP connect time in ms
-              example: 25
-            tls:
-              type: integer
-              description: TLS handshake time in ms
-              example: 45
-            ttfb:
-              type: integer
-              description: Time to first byte in ms
-              example: 150
-            total:
-              type: integer
-              description: Total response time in ms
-              example: 245
-          description: Detailed timing breakdown
         error:
           type: string
-          nullable: true
-          description: Error message (if check failed)
-        createdAt:
+        redirectLocation:
           type: string
-          format: date-time
-          description: Timestamp of the check execution
-          example: "2025-01-15T14:30:00Z"
+        createdAt:
+          type: integer
+          description: Same value as timestamp
+          example: 1736951400000
 
     Stats:
       type: object
       properties:
-        checkId:
-          type: string
-          description: Associated check ID
-          example: "abc123"
-        period:
-          type: object
-          properties:
-            from:
-              type: string
-              format: date-time
-            to:
-              type: string
-              format: date-time
-          description: Statistics time period
-        uptime:
-          type: object
-          properties:
-            percentage:
-              type: number
-              format: float
-              description: Uptime percentage
-              example: 99.95
-            totalChecks:
-              type: integer
-              description: Total check executions
-              example: 720
-            successfulChecks:
-              type: integer
-              description: Successful check count
-              example: 719
-            failedChecks:
-              type: integer
-              description: Failed check count
-              example: 1
-        responseTime:
-          type: object
-          properties:
-            average:
-              type: integer
-              description: Mean response time in ms
-              example: 245
-            min:
-              type: integer
-              description: Minimum response time in ms
-              example: 120
-            max:
-              type: integer
-              description: Maximum response time in ms
-              example: 890
-            p50:
-              type: integer
-              description: 50th percentile in ms
-              example: 230
-            p90:
-              type: integer
-              description: 90th percentile in ms
-              example: 410
-            p95:
-              type: integer
-              description: 95th percentile in ms
-              example: 550
-            p99:
-              type: integer
-              description: 99th percentile in ms
-              example: 820
-        timing:
-          type: object
-          properties:
-            dns:
-              type: object
-              properties:
-                average:
-                  type: integer
-                  example: 12
-                p95:
-                  type: integer
-                  example: 25
-            connect:
-              type: object
-              properties:
-                average:
-                  type: integer
-                  example: 25
-                p95:
-                  type: integer
-                  example: 45
-            tls:
-              type: object
-              properties:
-                average:
-                  type: integer
-                  example: 45
-                p95:
-                  type: integer
-                  example: 80
-            ttfb:
-              type: object
-              properties:
-                average:
-                  type: integer
-                  example: 150
-                p95:
-                  type: integer
-                  example: 350
-          description: Timing breakdown statistics
-        incidents:
-          type: object
-          properties:
-            count:
-              type: integer
-              description: Number of incidents
-              example: 1
-            totalDowntime:
-              type: integer
-              description: Total downtime in seconds
-              example: 300
-            mtbf:
-              type: integer
-              description: Mean time between failures in seconds
-              example: 86100
-            mttr:
-              type: integer
-              description: Mean time to recovery in seconds
-              example: 300
+        totalChecks:
+          type: integer
+          example: 720
+        onlineChecks:
+          type: integer
+          example: 714
+        offlineChecks:
+          type: integer
+          description: Confirmed offline results outside maintenance
+          example: 6
+        uptimePercentage:
+          type: number
+          description: onlineDurationMs / totalDurationMs * 100, or 0 when there is no data
+          example: 97.5
+        totalDurationMs:
+          type: integer
+          example: 86400000
+        onlineDurationMs:
+          type: integer
+          example: 84240000
+        offlineDurationMs:
+          type: integer
+          example: 2160000
+        responseSampleCount:
+          type: integer
+          example: 714
+        avgResponseTime:
+          type: number
+          example: 245.1
+        minResponseTime:
+          type: number
+          example: 120
+        maxResponseTime:
+          type: number
+          example: 890
 
-    PaginationMeta:
+    CheckListMeta:
       type: object
       properties:
         page:
           type: integer
-          description: Current page number
           example: 1
         limit:
           type: integer
-          description: Results per page
           example: 25
         total:
-          type: integer
-          nullable: true
-          description: Total results (only if includeTotal=true)
+          type: [integer, "null"]
+          description: Null when includeTotal=false
           example: 12
-        cursor:
-          type: string
-          nullable: true
-          description: Cursor for next page
-          example: "next_cursor_value"
+        totalPages:
+          type: [integer, "null"]
+          description: Null when includeTotal=false
+          example: 1
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+        nextCursor:
+          type: [string, "null"]
+
+    HistoryMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 25
+        total:
+          type: "null"
+        totalPages:
+          type: "null"
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
 
     Error:
       type: object
@@ -736,43 +595,45 @@ components:
         - error
       properties:
         error:
-          type: object
-          required:
-            - code
-            - message
-          properties:
-            code:
-              type: integer
-              description: HTTP status code
-            message:
-              type: string
-              description: Human-readable error message
-            retryAfter:
-              type: integer
-              description: Seconds to wait before retrying (for 429 responses)
+          type: string
+          description: Human-readable error message
+        retryAfter:
+          type: integer
+          description: Seconds to wait before retrying (429 responses)
+        quotaLimit:
+          type: integer
+          description: Daily request quota (daily-quota 429 responses only)
+        quotaReset:
+          type: integer
+          description: Epoch ms when the daily quota resets (daily-quota 429 responses only)
 
   responses:
-    Unauthorized:
-      description: Missing or invalid API key
+    BadRequest:
+      description: Invalid parameters
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              code: 401
-              message: "Invalid or missing API key"
+            error: "Invalid check ID format"
+
+    Unauthorized:
+      description: Missing, invalid or disabled credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Invalid API key"
 
     Forbidden:
-      description: API access not available on your plan
+      description: Missing scope, or the check belongs to another account
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              code: 403
-              message: "API access requires a Nano plan subscription"
+            error: "Credential does not have the required scope: checks:read"
 
     NotFound:
       description: Resource not found
@@ -781,31 +642,28 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              code: 404
-              message: "Check not found"
+            error: "Not found"
 
     RateLimited:
       description: Rate limit exceeded
       headers:
-        X-RateLimit-Limit:
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          schema:
-            type: integer
+        RateLimit-Limit:
+          $ref: "#/components/headers/RateLimit-Limit"
+        RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimit-Remaining"
+        RateLimit-Reset:
+          $ref: "#/components/headers/RateLimit-Reset"
+        RateLimit:
+          $ref: "#/components/headers/RateLimit"
+        Retry-After:
+          $ref: "#/components/headers/Retry-After"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              code: 429
-              message: "Rate limit exceeded. Please retry after the reset time."
-              retryAfter: 60
+            error: "Rate limit exceeded. Please try again later."
+            retryAfter: 42
 
     InternalError:
       description: Internal server error
@@ -814,6 +672,4 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            error:
-              code: 500
-              message: "An unexpected error occurred"
+            error: "Internal error"
