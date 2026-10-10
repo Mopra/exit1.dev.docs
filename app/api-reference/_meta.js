@@ -5,6 +5,7 @@ export default {
   "rate-limits": "Rate Limits",
   errors: "Errors",
   "list-checks": "List Checks",
+  "check-status": "Check Status",
   "get-check": "Get Check",
   "check-history": "Check History",
   "check-stats": "Check Stats",

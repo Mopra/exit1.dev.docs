@@ -20,7 +20,10 @@ info:
     - Per endpoint per key: 1 request/minute
     - Daily per key: 500 requests
     - Daily per user: 2,000 requests
-  version: "1.1.0"
+
+    `GET /v1/public/checks/status` has its own limits (6/minute per key,
+    12/minute per user) and does not count toward the ones above.
+  version: "1.2.0"
   contact:
     name: exit1.dev Support
     url: https://exit1.dev
@@ -105,6 +108,64 @@ paths:
                     $ref: "#/components/schemas/CheckListMeta"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /v1/public/checks/status:
+    get:
+      operationId: getCheckStatuses
+      summary: Status of every check
+      description: |
+        The current status of every check, unpaginated, for monitoring systems
+        that poll. Has its own rate limit (6/minute per key, 12/minute per
+        user) outside the daily quotas. Send the last ETag as If-None-Match
+        to get a 304 when nothing changed.
+      tags:
+        - Checks
+      parameters:
+        - name: If-None-Match
+          in: header
+          description: ETag from a previous response
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Status of every check
+          headers:
+            ETag:
+              description: Changes only when a check's reported state changes
+              schema:
+                type: string
+            RateLimit-Limit:
+              $ref: "#/components/headers/RateLimit-Limit"
+            RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimit-Remaining"
+            RateLimit-Reset:
+              $ref: "#/components/headers/RateLimit-Reset"
+            RateLimit:
+              $ref: "#/components/headers/RateLimit"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CheckStatus"
+                  meta:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+        "304":
+          description: Nothing changed since the ETag in If-None-Match
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -390,6 +451,11 @@ components:
           description: 1 (P1, critical) to 5 (P5, minimal); null when unset
         lastError:
           type: [string, "null"]
+        lastStatusChange:
+          type: [integer, "null"]
+          description: Epoch ms when status last changed. Null if it has not changed since the field was introduced.
+        regions:
+          $ref: "#/components/schemas/CheckRegions"
         disabled:
           type: boolean
         maintenanceMode:
@@ -461,6 +527,56 @@ components:
         updatedAt:
           type: integer
           description: Epoch ms
+
+    CheckRegions:
+      type: object
+      description: Which regions observed the latest result. A second (peer) region re-checks failures.
+      properties:
+        primary:
+          type: [string, "null"]
+          example: "vps-eu-1"
+        peer:
+          type: [string, "null"]
+          description: Null when no peer region was consulted
+          example: "vps-us-1"
+        regionsTotal:
+          type: integer
+          example: 2
+        regionsDown:
+          type: integer
+          example: 2
+        confirmedDown:
+          type: boolean
+          description: Offline and the peer region agreed
+
+    CheckStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "abc123"
+        name:
+          type: string
+          example: "Production Website"
+        status:
+          type: string
+          enum:
+            - online
+            - offline
+            - degraded
+            - unknown
+        lastStatusChange:
+          type: [integer, "null"]
+          description: Epoch ms when status last changed
+        lastError:
+          type: [string, "null"]
+          description: Only set while status is offline
+        disabled:
+          type: boolean
+        maintenanceMode:
+          type: boolean
+        regions:
+          $ref: "#/components/schemas/CheckRegions"
 
     HistoryEntry:
       type: object

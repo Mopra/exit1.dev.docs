@@ -32,6 +32,14 @@ GET /v1/public/checks/{id}
     "folder": "Production",
     "severity": 2,
     "lastError": null,
+    "lastStatusChange": 1736865000000,
+    "regions": {
+      "primary": "vps-eu-1",
+      "peer": null,
+      "regionsTotal": 1,
+      "regionsDown": 0,
+      "confirmedDown": false
+    },
     "disabled": false,
     "maintenanceMode": false,
     "maintenanceUntil": null,
@@ -79,6 +87,8 @@ This is the shape returned by both [List Checks](/api-reference/list-checks) and
 | `folder` | string \| null | Folder the check is grouped under in the dashboard |
 | `severity` | number \| null | Check severity from `1` (P1, critical) to `5` (P5, minimal). `null` means no severity is set |
 | `lastError` | string \| null | Most recent error message, if any |
+| `lastStatusChange` | number \| null | Epoch ms when `status` last changed. `null` for a check whose status has not changed since this field was introduced |
+| `regions` | object | Which regions observed the latest result: `primary`, `peer`, `regionsTotal`, `regionsDown` and `confirmedDown`. See [Check Status](/api-reference/check-status#regions) |
 | `disabled` | boolean | `true` if the check is paused |
 | `maintenanceMode` | boolean | `true` while the check is in maintenance mode |
 | `maintenanceUntil` | number \| null | Epoch ms when the current maintenance window ends. `null` when not in maintenance or when the window has no end |

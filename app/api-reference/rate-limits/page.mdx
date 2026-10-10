@@ -16,6 +16,17 @@ The exit1.dev API enforces rate limits to ensure fair usage and platform stabili
 
 Daily quotas are 24-hour windows that start with the first request counted against them, not calendar days.
 
+## Status Polling
+
+[`GET /v1/public/checks/status`](/api-reference/check-status) has its own limits instead of the ones above, so a monitoring system can poll it every 10 to 30 seconds:
+
+| Scope | Limit |
+|---|---|
+| Per API key | 6 requests/minute |
+| Per user (all keys) | 12 requests/minute |
+
+These requests do not count toward the daily quotas or the per-key limit of the other endpoints. The pre-authentication limit per IP still applies. Send `If-None-Match` with the last `ETag` to get a `304` when nothing changed.
+
 ## Write Limits
 
 Write endpoints (`POST`, `PATCH`, `DELETE`) have additional rate limits on top of the read limits:
@@ -101,5 +112,6 @@ Write limit `429`s include `retryAfter` but not `quotaLimit` or `quotaReset`. Th
 - Monitor the `RateLimit-Remaining` header to stay within limits
 - Spread requests evenly over time rather than bursting
 - Use `limit=100` on list requests to reduce the number of pages you fetch
+- Poll [`/checks/status`](/api-reference/check-status) for live status instead of paging through the list
 - Use `ranges=` on the stats endpoint to fetch several windows in one request
 - Use idempotency keys when retrying failed create requests
