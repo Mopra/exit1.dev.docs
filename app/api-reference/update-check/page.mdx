@@ -24,7 +24,7 @@ All fields are optional. Only include the fields you want to change. No `Idempot
 |---|---|---|
 | `url` | string | The URL, host or domain to monitor. Ignored for `domain` checks |
 | `name` | string | Display name (max 200 characters) |
-| `type` | string | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns` or `heartbeat`. A check can't be converted to or from `domain` |
+| `type` | string | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns` or `heartbeat`. A check can't be converted to or from `domain`, `dns` or `heartbeat`; delete and re-create it instead |
 | `checkFrequency` | number | Minutes between checks (subject to plan limits) |
 | `checkRegionOverride` | string | Region to run the check from: `vps-eu-1` or `vps-us-1`. Only honored on plans with region choice (Nano and Pro). On other plans the check stays on `vps-eu-1` |
 | `httpMethod` | string | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` or `HEAD` |

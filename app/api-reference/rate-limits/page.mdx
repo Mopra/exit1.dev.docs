@@ -82,7 +82,7 @@ When a daily request quota is exceeded, the body also includes the quota and whe
 
 ```json
 {
-  "error": "Daily quota exceeded for this credential. Limit: 500 requests/day. Resets at midnight UTC.",
+  "error": "Daily quota exceeded for this credential. Limit: 500 requests/day. The window resets 24 hours after it started (see quotaReset).",
   "quotaLimit": 500,
   "quotaReset": 1736985600000,
   "retryAfter": 31200
