@@ -16,9 +16,27 @@ GET /v1/public/checks
 | `page` | integer | 1 | Page number for offset pagination |
 | `cursor` | string | - | `nextCursor` value from a previous response, for cursor pagination |
 | `status` | string | `all` | Filter by status: `all`, `online`, `offline`, `degraded` or `unknown`. Any other value returns `400` |
+| `folder` | string | - | Only checks in this folder, by its full path, such as `Personal/Radio` |
+| `recursive` | boolean | `false` | With `folder`, also include checks in its subfolders. Any value other than `true` or `false` returns `400` |
 | `includeTotal` | boolean | `true` | Set to `false` to skip counting. `total` and `totalPages` are then `null` |
 
 Checks are returned in the same order as in your dashboard.
+
+## Filtering by Folder
+
+`folder` takes the full path of the folder, with `/` between levels, as it appears in the `folder` field of each check. Leading and trailing slashes are ignored. Without `recursive`, only checks directly in that folder are returned:
+
+```bash
+curl -H "X-Api-Key: ek_live_..."   "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?folder=Personal/Radio"
+```
+
+Add `recursive=true` to include every subfolder too, so `Personal/Radio/Live` matches but `Personal/Radio-old` does not:
+
+```bash
+curl -H "X-Api-Key: ek_live_..."   "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?folder=Personal/Radio&recursive=true"
+```
+
+`folder` combines with `status` and both pagination methods. When `folder` is set, `total` is always returned, even with `includeTotal=false`.
 
 ## Pagination
 
