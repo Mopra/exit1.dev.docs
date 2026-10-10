@@ -9,7 +9,8 @@ The exit1.dev API uses API keys for authentication.
 1. Navigate to **Settings** > **API**
 2. Click **Create API Key**
 3. Select the [scopes](/api-reference/scopes) you need (read, write, delete)
-4. Copy the generated key immediately (it won't be shown again)
+4. Optionally pick an [expiry](#expiry) and [restrict the key](#restricting-a-key-to-checks-or-folders) to some checks or folders
+5. Copy the generated key immediately (it won't be shown again)
 
 How many keys you can hold depends on your plan. Every plan can mint at least
 one — API and MCP access are the same entitlement, and neither is paid-only.
@@ -54,6 +55,43 @@ API keys support three scopes that control what operations the key can perform:
 
 Keys created without specifying scopes default to read-only. See the [Scopes](/api-reference/scopes) page for details.
 
+### Expiry
+
+A key can be created with an expiry: 1 hour, 8 hours, 24 hours, 7 days, 30
+days or 90 days. Keys without one never expire. A short expiry suits a key
+you hand to an AI tool or a one-off script.
+
+Once a key expires, every request with it returns `401` with
+`{"error": "API key expired"}`. The API Keys page shows the expiry time and
+marks expired keys. An expired key can't be renewed: create a new one.
+
+### Restricting a Key to Checks or Folders
+
+By default a key sees every check on the account. When creating a key you
+can instead choose **Only selected checks and folders** and pick:
+
+- **Checks:** the key can use exactly these checks.
+- **Folders:** the key can use every check in the folder **and its
+  subfolders**, including checks added to them later.
+
+A restricted key behaves as if the other checks don't exist:
+
+| Endpoint | Behavior for a restricted key |
+|---|---|
+| `GET /v1/public/checks` | Lists only the allowed checks (`total` counts only those) |
+| `GET /v1/public/checks/status` | Returns only the allowed checks |
+| `GET`, `PATCH`, `DELETE /v1/public/checks/{id}` and every `/checks/{id}/...` route | `404` with `{"error": "Check not found"}` for any check outside the grant |
+| `POST /v1/public/checks` | Only into an allowed folder: pass `folder`, for example `"Clients/Acme"` or `"Clients/Acme/Staging"`. A key restricted only to individual checks can't create checks. Otherwise `403` |
+| `/v1/public/alerts/...` | `403`. Alert channels are account-wide, so they need an unrestricted key |
+
+Restrictions combine with [scopes](/api-reference/scopes): scopes decide
+*what* a key may do, the restriction decides *which checks* it may do it to.
+`GET /v1/public/account` returns the calling key's `expiresAt` and `access`
+under `key`.
+
+Expiry and restrictions are set when the key is created and can't be changed
+later. OAuth access tokens used by MCP clients are not affected by either.
+
 ### Revoking a Key
 
 To revoke an API key:
@@ -72,3 +110,4 @@ Revoked keys are immediately invalidated. Any requests using a revoked key will 
 - Revoke unused keys immediately
 - Each key has independent rate limits
 - Only grant the scopes your integration actually needs
+- Give keys for AI tools and scripts a short expiry and restrict them to the checks they work on

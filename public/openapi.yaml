@@ -348,6 +348,9 @@ components:
       description: |
         API key for authentication. Create keys at Settings > API.
         Format: `ek_live_<64 hex characters>`
+        A key can carry an expiry (401 "API key expired" afterwards) and can be
+        restricted to specific checks and/or folders (subfolders included).
+        A restricted key only lists its own checks and gets 404 for others.
 
   parameters:
     CheckId:

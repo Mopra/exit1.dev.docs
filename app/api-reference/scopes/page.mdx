@@ -37,6 +37,15 @@ If your API key does not have the required scope, the API returns a `403 Forbidd
 }
 ```
 
+## Restricting a Key to Checks or Folders
+
+Scopes control *what* a key may do. To also limit *which checks* it may do it
+to, restrict the key to specific checks and/or folders when you create it. A
+folder includes its subfolders. Checks outside the grant return `404`, and a
+restricted key can only create checks inside an allowed folder. See
+[Authentication](/api-reference/authentication#restricting-a-key-to-checks-or-folders)
+for the full rules.
+
 ## Creating a Scoped Key
 
 When creating an API key in **Settings > API**, select the scopes you need. You can assign multiple scopes to a single key.

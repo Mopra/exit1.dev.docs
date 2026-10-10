@@ -59,6 +59,7 @@ Every error response is a JSON object with a single `error` string:
 | `Missing credentials. Send X-Api-Key or an OAuth Bearer token.` | No `X-Api-Key` or `Authorization: Bearer` header |
 | `Invalid API key` | The key does not exist or was revoked |
 | `API key disabled` | The key exists but is disabled |
+| `API key expired` | The key's [expiry](/api-reference/authentication#expiry) has passed |
 | `Invalid or expired access token` | The OAuth access token is invalid or expired |
 
 ### 403 Forbidden
@@ -73,6 +74,7 @@ Every error response is a JSON object with a single `error` string:
 - API key missing the required [scope](/api-reference/scopes) for the operation
 - The check belongs to a different account (`{"error": "Forbidden"}`)
 - The check type is not available on your plan, for example `DNS monitoring requires a paid plan.`
+- The key is [restricted](/api-reference/authentication#restricting-a-key-to-checks-or-folders) and tried to create a check outside its folders, or to use an `/alerts` route
 
 ### 404 Not Found
 
@@ -87,6 +89,8 @@ Every error response is a JSON object with a single `error` string:
 - The path does not match any endpoint
 
 A check that exists but belongs to another account returns `403`, not `404`.
+A key [restricted](/api-reference/authentication#restricting-a-key-to-checks-or-folders)
+to other checks gets `404` with `Check not found` on every route.
 
 ### 409 Conflict
 

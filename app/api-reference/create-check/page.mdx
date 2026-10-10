@@ -24,6 +24,7 @@ POST /v1/public/checks
 |---|---|---|---|
 | `url` | string | Yes | The URL, host or domain to monitor. Not required for `heartbeat` checks: exit1 generates a unique ping URL automatically |
 | `name` | string | No | Display name (max 200 characters, defaults to the URL) |
+| `folder` | string | No | Folder path such as `Clients/Acme` (at most 10 levels, 48 characters per folder name). Required for a key [restricted to folders](/api-reference/authentication#restricting-a-key-to-checks-or-folders): it must be one of the key's folders or a subfolder |
 | `type` | string | No | Check type: `website`, `rest_endpoint`, `redirect`, `ping`, `tcp`, `udp`, `websocket`, `dns`, `heartbeat` or `domain` (default: `website`). Unrecognized values fall back to `website`. `dns` requires a paid plan. `domain` tracks domain expiry only (no uptime probe), takes a bare domain such as `example.com` as `url`, and requires Nano or Pro |
 | `checkFrequency` | number | No | Minutes between checks (default: 5, subject to plan limits) |
 | `checkRegionOverride` | string | No | Region to run the check from: `vps-eu-1` (Frankfurt) or `vps-us-1` (Boston). Only honored on plans with region choice (Nano and Pro). On other plans the check always runs from `vps-eu-1` |
@@ -87,7 +88,7 @@ Only the new check ID is returned. Use [Get Check](/api-reference/get-check) to 
 | Status | Description |
 |---|---|
 | 400 | Missing `Idempotency-Key`, invalid request body or validation failure |
-| 403 | API key missing `checks:write` scope, or the check type is not available on your plan |
+| 403 | API key missing `checks:write` scope, the check type is not available on your plan, or the key is restricted and `folder` is not one of its folders |
 | 409 | A check already exists for this URL, the domain is already monitored, or your plan's check limit is reached |
 | 422 | Malformed `Idempotency-Key`, or the key was already used for a different request |
 | 429 | Rate limit exceeded, including the [check creation limits](/api-reference/rate-limits#check-creation-limits) |
