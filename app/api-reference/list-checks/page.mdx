@@ -18,6 +18,7 @@ GET /v1/public/checks
 | `status` | string | `all` | Filter by status: `all`, `online`, `offline`, `degraded` or `unknown`. Any other value returns `400` |
 | `folder` | string | - | Only checks in this folder, by its full path, such as `Personal/Radio` |
 | `recursive` | boolean | `false` | With `folder`, also include checks in its subfolders. Any value other than `true` or `false` returns `400` |
+| `include` | string | - | Comma-separated extras to add to each check. Supported: `uptime`. Any other value returns `400` |
 | `includeTotal` | boolean | `true` | Set to `false` to skip counting. `total` and `totalPages` are then `null` |
 
 Checks are returned in the same order as in your dashboard.
@@ -37,6 +38,24 @@ curl -H "X-Api-Key: ek_live_..."   "https://us-central1-exit1-dev.cloudfunctions
 ```
 
 `folder` combines with `status` and both pagination methods. When `folder` is set, `total` is always returned, even with `includeTotal=false`.
+
+## Including Uptime
+
+Add `include=uptime` to get uptime figures on every listed check, so you do not need one stats call per check:
+
+```bash
+curl -H "X-Api-Key: ek_live_..."   "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks?include=uptime"
+```
+
+Each check then carries three extra fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `uptime24h` | number | null | Uptime percentage over the last 24 hours |
+| `uptime30d` | number | null | Uptime percentage over the last 30 days |
+| `avgResponseTime24h` | number | null | Average response time in milliseconds over the last 24 hours |
+
+A field is `null` when there is no data for the window. If the lookup fails, the list still returns with all three set to `null`. The 24h figures are cached for about 5 minutes and the 30d figure for about 1 hour.
 
 ## Pagination
 
@@ -131,6 +150,7 @@ Each item in `data` is a check object. See [Get Check](/api-reference/get-check#
 | Status | Body | Cause |
 |---|---|---|
 | 400 | `{"error": "Invalid status. Allowed: all, online, offline, degraded, unknown"}` | Unsupported `status` value |
+| 400 | `{"error": "Invalid include: ... Allowed: uptime"}` | Unsupported `include` value |
 
 ## Code Examples
 
