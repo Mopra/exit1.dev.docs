@@ -19,7 +19,7 @@ you can also just stay on it and upgrade when you need more capacity.
 ## Monitoring
 
 ### How accurate are the uptime calculations?
-Uptime is calculated based on every check execution. Higher tiers check more frequently — Free runs every 5 minutes (288 data points/day), Indie every minute (1,440/day), Nano every 30 seconds (2,880/day), Pro every 15 seconds (5,760/day).
+Uptime is calculated based on every check execution. Higher tiers check more frequently. Free runs every 5 minutes (288 data points/day), Indie every minute (1,440/day), Nano every 30 seconds (2,880/day), Pro every 15 seconds (5,760/day).
 
 ### What happens during a network outage at the monitoring region?
 If a monitoring region experiences issues, checks may be delayed. exit1.dev runs from Google Cloud infrastructure for high availability.
@@ -47,35 +47,47 @@ Yes. Configure per-check alert overrides to control which checks trigger alerts 
 ## Billing
 
 ### What payment methods are accepted?
-We accept all major credit and debit cards through our payment processor.
+We accept all major credit and debit cards. To change the card you pay with, open the **Payment** tab in **Plans & billing** and click **Add or change card**. See [Change your card](/billing/manage#change-your-card).
+
+### How do I change my card?
+Click **Plans & billing** in the sidebar, open the **Payment** tab and click **Add or change card**. Add the new card and set it as your default. Your next charge goes to that card. [Step-by-step guide](/billing/manage#change-your-card).
+
+### Where do I get an invoice or receipt?
+Open the **Invoices** tab in **Plans & billing**. Every charge is listed with a **Receipt** button that downloads a PDF. [Step-by-step guide](/billing/manage#download-invoices-and-receipts).
+
+### Can I put my company name and VAT number on invoices?
+Yes. Fill in your company name, address and VAT or tax ID on the **Org** tab in **Plans & billing**, and they are printed on your receipts. [Step-by-step guide](/billing/manage#put-your-company-name-and-vat-number-on-receipts).
+
+### How do I cancel?
+Click **Cancel subscription** on the **Overview** tab in **Plans & billing** and confirm. You keep your plan until the end of the period you paid for, then move to Free, and nothing is deleted. [Step-by-step guide](/billing/manage#cancel).
 
 ### Can I get a refund?
-Contact support within 14 days of a charge for a refund evaluation.
+Email [connect@exit1.dev](mailto:connect@exit1.dev) within 14 days of a charge and we will look at your refund request.
 
 ### Is there annual billing?
-Yes. exit1.dev offers both monthly and annual billing. Save 25% with annual billing.
+Yes. exit1.dev offers both monthly and annual billing. Annual saves 17 to 25% depending on the plan, about 20% on average.
 
 ### What happens if my payment fails?
-Your account continues on your current plan for a grace period. If payment is not resolved, your account is downgraded to the Free plan.
+A red **Your last payment failed** banner appears in the app. Click **Update card** in it and add a working card. Your plan stays active while we retry the charge, and if it still cannot be collected your account moves to Free, with nothing deleted. See [If a payment fails](/billing/manage#if-a-payment-fails).
 
 ## MCP (AI Assistants)
 
 ### What is the MCP integration?
-MCP (Model Context Protocol) lets you connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf. Once connected, you can ask questions about your monitoring data in natural language — check uptime, review failures, compare response times, and more.
+MCP (Model Context Protocol) lets you connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf. Once connected, you can ask questions about your monitoring data in natural language: check uptime, review failures, compare response times, and more.
 
 ### Which plans include MCP?
-MCP is available on **every plan, including Free**. MCP access follows API access — they are the same entitlement, so any plan that can mint an API key can use MCP. Key counts: 1 on Free, 3 on Indie, 10 on Nano, 100 on Pro.
+MCP is available on **every plan, including Free**. MCP access follows API access. They are the same entitlement, so any plan that can mint an API key can use MCP. Key counts: 1 on Free, 3 on Indie, 10 on Nano, 100 on Pro.
 
 ### Which AI assistants are supported?
 Claude Desktop, Claude Code, Cursor, and Windsurf. Any AI tool that supports the Model Context Protocol can connect.
 
 ### Does MCP have separate rate limits?
-MCP uses your existing API key rate limits: 5 requests/minute per key, 500 requests/day per key, and 2,000 requests/day per user. Normal AI conversations use 2–5 tool calls, so these limits are rarely hit.
+MCP uses your existing API key rate limits: 5 requests/minute per key, 500 requests/day per key, and 2,000 requests/day per user. Normal AI conversations use 2 to 5 tool calls, so these limits are rarely hit.
 
 ## API
 
 ### How do I get an API key?
-Navigate to **Settings** > **API** and click **Create API Key**. Every plan can mint keys — 1 on Free, 3 on Indie, 10 on Nano, 100 on Pro.
+Navigate to **Settings** > **API** and click **Create API Key**. Every plan can mint keys: 1 on Free, 3 on Indie, 10 on Nano, 100 on Pro.
 
 ### Can I create or modify checks via the API?
 The current API is read-only. You can retrieve check data, history, and statistics. Check management via API is planned for a future release.
