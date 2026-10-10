@@ -58,10 +58,37 @@ The `responseValidation` object supports:
 
 | Field | Type | Description |
 |---|---|---|
-| `containsText` | string[] | Strings that must appear in the response body (max 10) |
-| `jsonPath` | string | JSONPath expression to evaluate (max 500 characters) |
-| `jsonPathOperator` | string | How to compare the JSONPath result: `equals`, `not_equals`, `contains` or `exists` |
+| `containsText` | string[] | Strings that must appear in the response body (max 10, case-insensitive) |
+| `containsTextMode` | string | `all` (default): every `containsText` entry must appear. `any`: at least one |
+| `notContainsText` | string[] | Fail the check if any of these appear in the body (max 10, case-insensitive) |
+| `jsonAssertions` | object[] | Several JSONPath assertions (max 20, see below). Replaces `jsonPath`, `jsonPathOperator` and `expectedValue` |
+| `jsonAssertionsMode` | string | `all` (default): every assertion must pass (AND). `any`: one is enough (OR) |
+| `jsonPath` | string | Single JSONPath expression (max 500 characters). Ignored when `jsonAssertions` is set |
+| `jsonPathOperator` | string | How to compare the JSONPath result, see operators below |
 | `expectedValue` | any | Expected value at the JSONPath location (strings max 1,000 characters) |
+
+Each entry in `jsonAssertions` has:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `path` | string | Yes | JSONPath, for example `$.engines['mail-intake'].sinceMs` (max 500 characters) |
+| `operator` | string | No | Defaults to `equals` |
+| `expectedValue` | any | Depends | Required for every operator except `exists`. Must be a number for the greater and less operators |
+
+Operators: `equals`, `not_equals`, `contains`, `exists`, `greater_than`, `greater_or_equal`, `less_than`, `less_or_equal`.
+
+```json
+{
+  "responseValidation": {
+    "notContainsText": ["maintenance"],
+    "jsonAssertionsMode": "all",
+    "jsonAssertions": [
+      { "path": "$.status", "operator": "equals", "expectedValue": "ok" },
+      { "path": "$.queue.depth", "operator": "less_than", "expectedValue": 1000 }
+    ]
+  }
+}
+```
 
 ## Idempotency
 

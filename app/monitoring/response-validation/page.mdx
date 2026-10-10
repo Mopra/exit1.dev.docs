@@ -32,6 +32,27 @@ The JSONPath `$.status` extracts `"ok"`, which matches the expected value.
 | `$.items[0].name` | First item's name in an array |
 | `$.items.length` | Number of items in an array |
 
+### Comparison Operators
+
+Each JSONPath assertion compares the extracted value with an operator:
+
+| Operator | Passes when |
+|---|---|
+| `equals` | The value equals the expected value (default) |
+| `not_equals` | The value differs from the expected value |
+| `contains` | The value contains the expected value |
+| `exists` | The path resolves to a value (no expected value needed) |
+| `greater_than`, `greater_or_equal`, `less_than`, `less_or_equal` | Numeric comparison. The expected value must be a number |
+
+### Multiple Assertions (AND / OR)
+
+Add several JSONPath assertions to one check, for example `$.status` equals `ok` and `$.queue.depth` is less than `1000`. Choose how they combine:
+
+- **All** (default): every assertion must pass (AND)
+- **Any**: one passing assertion is enough (OR)
+
+A check can have up to 20 assertions.
+
 ### Text Containment
 
 Verify that the response body contains a specific text string. This is useful for:
@@ -39,6 +60,12 @@ Verify that the response body contains a specific text string. This is useful fo
 - HTML pages that should contain specific content
 - API responses where you want to verify a keyword exists
 - Simple health checks that return plain text
+
+With several strings, choose **all** (default, every string must appear) or **any** (at least one).
+
+### Must Not Contain
+
+Fail the check if any of the listed strings appear in the response body, for example `maintenance` or `error`. Useful for pages that return 200 while showing an error. Up to 10 strings.
 
 ## How Validation Works
 
@@ -51,7 +78,7 @@ Verify that the response body contains a specific text string. This is useful fo
 
 - Response validation is only available for website and API checks (not TCP/UDP)
 - JSONPath validation requires the response to be valid JSON
-- Text containment is case-sensitive
+- Text containment and must-not-contain are case-insensitive
 - The full response body is available for validation (no size limit on the validation itself)
 
 ## Best Practices
