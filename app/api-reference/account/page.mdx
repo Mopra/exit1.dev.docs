@@ -1,0 +1,114 @@
+# Get Account
+
+Return the plan, limits and current usage of the account behind the credential. Use it to plan inside the account's limits before creating checks or webhooks, instead of finding them by hitting a `409`.
+
+**Required scope:** `checks:read`
+
+## Endpoint
+
+```
+GET /v1/public/account
+```
+
+## Response
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "tier": "nano",
+    "scopes": ["checks:read", "checks:write", "alerts:read"],
+    "key": {
+      "expiresAt": null,
+      "access": null
+    },
+    "limits": {
+      "maxChecks": 50,
+      "minCheckIntervalMinutes": 2,
+      "maxWebhooks": 10,
+      "maxApiKeys": 10,
+      "regionChoice": true,
+      "domainIntel": true
+    },
+    "usage": {
+      "checks": 12,
+      "webhooks": 1
+    },
+    "alerts": {
+      "emailConfigured": true,
+      "emailEnabled": true,
+      "webhookCount": 1
+    },
+    "dashboardUrl": "https://app.exit1.dev/checks",
+    "upgradeUrl": null
+  }
+}
+```
+
+The numbers above are an example. Read the real limits from the response rather than hardcoding them.
+
+### Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `tier` | string | Current plan: `free`, `indie`, `nano` or `pro` |
+| `scopes` | string[] | Scopes of the calling credential. A key created without scopes reports `["checks:read"]` |
+| `key` | object \| null | The calling API key's own limits. `null` for OAuth (MCP) sessions |
+| `key.expiresAt` | number \| null | When the key expires (epoch ms), or `null` if it never does |
+| `key.access` | object \| null | `{ "checkIds": [...], "folders": [...] }` if the key is [restricted](/api-reference/authentication#restricting-a-key-to-checks-or-folders), otherwise `null` |
+| `limits.maxChecks` | number | Most checks this account can have. This is the effective cap for this account, which can differ from the plan's published number |
+| `limits.minCheckIntervalMinutes` | number | Shortest check interval the plan allows |
+| `limits.maxWebhooks` | number | Most webhooks the plan allows |
+| `limits.maxApiKeys` | number | Most API keys the plan allows |
+| `limits.regionChoice` | boolean | Whether checks can be pinned to a region |
+| `limits.domainIntel` | boolean | Whether domain intelligence is included |
+| `usage.checks` | number | Checks the account has now |
+| `usage.webhooks` | number | Webhooks the account has now |
+| `alerts.emailConfigured` | boolean | `true` if email alerts have at least one recipient |
+| `alerts.emailEnabled` | boolean | `true` if email alerts are switched on |
+| `alerts.webhookCount` | number | Number of webhooks, enabled or not |
+| `dashboardUrl` | string | Link to the dashboard |
+| `upgradeUrl` | string \| null | Link to the billing page on the Free plan, otherwise `null` |
+
+## Error Responses
+
+| Status | Description |
+|---|---|
+| 401 | Missing, invalid, disabled or expired API key |
+| 403 | Credential missing `checks:read` scope |
+| 429 | Rate limit exceeded |
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/account"
+```
+
+### JavaScript
+
+```javascript
+const response = await fetch(
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/account",
+  { headers: { "X-Api-Key": process.env.EXIT1_API_KEY } }
+);
+const { data } = await response.json();
+console.log(`${data.usage.checks} of ${data.limits.maxChecks} checks used`);
+```
+
+### Python
+
+```python
+import os, requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/account",
+    headers={"X-Api-Key": os.environ["EXIT1_API_KEY"]},
+)
+response.raise_for_status()
+data = response.json()["data"]
+print(f"{data['usage']['checks']} of {data['limits']['maxChecks']} checks used")
+```

@@ -12,7 +12,9 @@ The exit1.dev API enforces rate limits to ensure fair usage and platform stabili
 | Daily per key | 500 requests |
 | Daily per user | 2,000 requests |
 
-"Per endpoint" means per route, not per check: `GET /v1/public/checks/a` and `GET /v1/public/checks/b` share one bucket. These limits count every request, including writes.
+"Per endpoint" means per route, not per check: `GET /v1/public/checks/a` and `GET /v1/public/checks/b` share one bucket, and so do toggling two different checks. This is on purpose. It keeps a script looping over many checks from turning into a burst of requests. These limits count every request, including writes.
+
+To act on several checks in a row with an API key, space the calls a minute apart. For live status of every check, use [`/checks/status`](/api-reference/check-status) instead of fetching checks one by one.
 
 Daily quotas are 24-hour windows that start with the first request counted against them, not calendar days.
 

@@ -13,4 +13,7 @@ export default {
   "update-check": "Update Check",
   "delete-check": "Delete Check",
   "toggle-check": "Toggle Check",
+  account: "Get Account",
+  "email-alerts": "Email Alerts",
+  "webhook-alerts": "Webhook Alerts",
 };

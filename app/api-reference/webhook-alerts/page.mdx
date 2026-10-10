@@ -1,0 +1,175 @@
+# Webhook Alerts
+
+List, create, test and delete the account's alert webhooks. Webhooks are account-wide: a webhook created here gets alerts for every check.
+
+All four endpoints need an unrestricted key. A key [restricted to checks or folders](/api-reference/authentication#restricting-a-key-to-checks-or-folders) gets `403`.
+
+For the payload a webhook receives and how to verify the signature, see [Webhooks](/integrations/webhooks).
+
+## List Webhooks
+
+**Required scope:** `alerts:read`
+
+```
+GET /v1/public/alerts/webhooks
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": "abc123",
+      "name": "Ops Slack",
+      "url": "https://hooks.slack.com/…",
+      "webhookType": "slack",
+      "events": ["website_down", "website_up"],
+      "enabled": true,
+      "createdAt": 1736985600000
+    }
+  ]
+}
+```
+
+The `url` is cut to its scheme and host. Slack and Discord webhook URLs work like passwords, so the API never returns them in full.
+
+## Create a Webhook
+
+**Required scope:** `alerts:write`
+
+```
+POST /v1/public/alerts/webhooks
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `url` | string | Yes | An `https` URL |
+| `name` | string | Yes | Display name, at most 100 characters |
+| `events` | string[] | No | Which [events](/api-reference/email-alerts#events) to send. Default `["website_down", "website_up"]` |
+| `webhookType` | string | No | `slack`, `discord`, `teams`, `pumble`, `pagerduty`, `opsgenie`, `pushover` or `generic`. Detected from the URL when left out: Slack, Discord, Teams and Pumble URLs are recognized, anything else is `generic` |
+| `secret` | string | No | Signing secret. When set, each request carries an `X-Exit1-Signature: sha256=<hmac>` header |
+
+The new webhook is enabled and gets alerts for all checks. To limit it to some checks or add custom headers, edit it in the dashboard.
+
+**201 Created**
+
+```json
+{
+  "data": {
+    "id": "abc123",
+    "name": "Ops Slack",
+    "url": "https://hooks.slack.com/…",
+    "webhookType": "slack",
+    "events": ["website_down", "website_up"],
+    "enabled": true
+  }
+}
+```
+
+## Send a Test Alert
+
+**Required scope:** `alerts:write`
+
+```
+POST /v1/public/alerts/webhooks/{id}/test
+```
+
+Sends a test message to the webhook. Slack, Pumble, Discord and Teams get a short message in their own format. A `generic` webhook gets a sample `website_down` payload with `"test": true`.
+
+Testing `pushover`, `pagerduty` and `opsgenie` webhooks is only possible from the [dashboard](https://app.exit1.dev/integrations). For those the API returns `502`.
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "message": "Test alert delivered",
+    "status": 200
+  }
+}
+```
+
+`status` is the HTTP status the webhook answered with.
+
+## Delete a Webhook
+
+**Required scope:** `alerts:write`
+
+```
+DELETE /v1/public/alerts/webhooks/{id}
+```
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "id": "abc123",
+    "deleted": true
+  }
+}
+```
+
+## Error Responses
+
+| Status | Description |
+|---|---|
+| 400 | `url` missing, invalid or not `https`; `name` missing or too long; unknown `webhookType`; no valid `events`; or invalid webhook ID |
+| 403 | Credential missing the required scope, the key is restricted to checks or folders, or the webhook belongs to another account |
+| 404 | Webhook not found, or no alerts endpoint matches the method and path |
+| 409 | The plan's webhook limit is reached, or a webhook with this URL already exists |
+| 429 | Rate limit exceeded |
+| 502 | Test only: the webhook could not be reached or answered with an error, or the type can only be tested from the dashboard |
+
+## Code Examples
+
+### cURL
+
+```bash
+curl -X POST \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Ops Slack", "url": "https://hooks.slack.com/services/T000/B000/XXXX"}' \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/alerts/webhooks"
+
+curl -X POST \
+  -H "X-Api-Key: ek_live_your_key_here" \
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/alerts/webhooks/WEBHOOK_ID/test"
+```
+
+### JavaScript
+
+```javascript
+const response = await fetch(
+  "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/alerts/webhooks",
+  {
+    method: "POST",
+    headers: {
+      "X-Api-Key": process.env.EXIT1_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "Incident bot",
+      url: "https://example.com/exit1-hook",
+      secret: process.env.EXIT1_WEBHOOK_SECRET,
+      events: ["website_down", "website_up", "ssl_warning"],
+    }),
+  }
+);
+console.log(await response.json());
+```
+
+### Python
+
+```python
+import os, requests
+
+response = requests.get(
+    "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/alerts/webhooks",
+    headers={"X-Api-Key": os.environ["EXIT1_API_KEY"]},
+)
+response.raise_for_status()
+for hook in response.json()["data"]:
+    print(hook["id"], hook["name"], hook["webhookType"])
+```
