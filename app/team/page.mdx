@@ -1,0 +1,63 @@
+# Team members
+
+On the **Pro** plan you can invite up to 10 teammates into your account. Each person signs in with their own login and sees your checks, alerts and status pages. You stay the owner: you pay for the account and you decide who is in it.
+
+## Roles
+
+| Role | What they can do |
+|---|---|
+| **Editor** | Everything in the account: add, change and delete checks, alert settings, webhooks and status pages. Create API keys and connect AI agents over MCP. |
+| **Viewer** | See everything, change nothing. API keys and agent connections they make are read only. |
+
+Only the owner can invite people, change roles and remove members. Billing always stays with the owner.
+
+## Invite a teammate
+
+1. Click **Team** in the left sidebar, or go to [app.exit1.dev/team](https://app.exit1.dev/team).
+2. Under **Invite a teammate**, enter their email and pick a role.
+3. Click **Send invite**.
+
+They get an email with an **Accept invite** button. The invite works for 14 days. If the email doesn't arrive, click **Copy link** next to the pending invite and send the link yourself.
+
+Invites count toward your 10 seats until they are accepted, cancelled or expire. To free a seat, click **Cancel** on a pending invite or remove a member.
+
+## Accept an invite
+
+1. Open the link in the invite email.
+2. Sign in, or create a free account, with **the same email address the invite was sent to**.
+3. Click **Accept**.
+
+You are switched into the team's account straight away. Your own account stays as it was, with its own checks and plan.
+
+If you signed in with a different address, add the invited address to your profile and verify it, then accept again.
+
+## Switch between accounts
+
+Once you belong to a team, an account switcher appears at the top of the left sidebar. Pick **My account** or the team. A bar at the top of every page shows whose account you are working in.
+
+Inside a team account you get the team's Pro features, whatever plan your own account is on.
+
+## Change a role or remove someone
+
+On the **Team** page, owners see every member with a role picker and a remove button.
+
+- Changing a role takes effect immediately.
+- Removing someone cuts their access immediately. API keys and AI agent connections they created in your account stop working at the same time.
+
+A member can also leave on their own: switch into the team, open **Team** and click **Leave team**.
+
+## API keys and MCP for teammates
+
+Teammates can create [API keys](/api-reference/authentication) and connect AI agents over [MCP](/integrations/mcp) while they are inside your account. These belong to your account:
+
+- They count toward your account's API key limit and share its rate limits.
+- The API keys page shows which keys a teammate created. A teammate can only revoke their own keys. The owner can revoke any key.
+- Keys and connections made by a **viewer** can only read, even if they were given write scopes.
+
+## If the owner leaves Pro
+
+Teams are a Pro feature. If the owner downgrades, teammates lose access to the account until the owner is back on Pro. Memberships are kept, so nobody needs to be invited again after re-subscribing. API keys and agent connections teammates created stop working while the account is off Pro.
+
+## Who gets alerts
+
+Alerts go to the email addresses, phone numbers and channels configured in the account, not to every member automatically. To get alerts as a teammate, add your email on the **Emails** page while you are in the team account (editors can do this).

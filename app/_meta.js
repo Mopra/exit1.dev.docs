@@ -11,5 +11,6 @@ export default {
   analytics: { title: "Analytics" },
   "api-reference": { title: "API Reference" },
   integrations: { title: "Integrations" },
+  team: { title: "Team" },
   billing: { title: "Billing" },
 };
