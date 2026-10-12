@@ -1,0 +1,91 @@
+# Agent Signup
+
+Create an exit1 account for a user and get an access token back in one call. Built for AI agents whose user has no exit1 credentials yet. For the full guide, the rules and the `exit1-mcp` path, see [Agent Signup](/integrations/agent-signup).
+
+**Authentication:** none. This endpoint lives on `app.exit1.dev`, not on the public API base URL.
+
+## Endpoint
+
+```
+POST https://app.exit1.dev/oauth/agent-signup
+```
+
+### Request Body
+
+```json
+{ "email": "user@example.com", "agent_name": "Claude Code" }
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `email` | string | Yes | The user's own email address. Ask the user if you don't know it. Never invent one. |
+| `agent_name` | string | No | How the agent names itself in the claim email. Max 60 characters. |
+
+## Response
+
+**201 Created**
+
+```json
+{
+  "access_token": "ek_at_…",
+  "token_type": "Bearer",
+  "expires_in": 2592000,
+  "refresh_token": "ek_rt_…",
+  "scope": "checks:read checks:write alerts:read alerts:write",
+  "account": {
+    "email": "user@example.com",
+    "status": "unclaimed",
+    "claim_email_sent": true
+  },
+  "mcp_url": "https://app.exit1.dev/mcp/v1",
+  "api_base": "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public",
+  "next_steps": "Tell the user to open the email … and claim the account. …"
+}
+```
+
+## Using the Token
+
+Send `Authorization: Bearer <access_token>`. A Bearer token from agent signup works on every endpoint an API key works on. POST requests still need an `Idempotency-Key` header.
+
+```bash
+curl -H "Authorization: Bearer ek_at_your_token" \
+  https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/checks
+```
+
+The same token works on the hosted MCP server at `https://app.exit1.dev/mcp/v1`.
+
+## Refreshing the Token
+
+Access tokens last 30 days, refresh tokens 180 days. Refresh tokens rotate on use, so save the new one each time.
+
+```
+POST https://app.exit1.dev/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&refresh_token=<refresh_token>
+```
+
+## Unclaimed Accounts
+
+The account is unclaimed until the user clicks the claim email exit1 sends. Until then:
+
+- Checks are created and run, and history builds.
+- **No alerts are delivered** on any channel. Test alerts return `403` with `account_unclaimed`.
+- [`GET /v1/public/account`](/api-reference/account) returns `"claimed": false` plus a `claimHint`.
+
+Unclaimed accounts are paused after 7 days and deleted after 30. See [the rules](/integrations/agent-signup#the-rules).
+
+## Discovery
+
+The OAuth authorization server metadata at `https://app.exit1.dev/.well-known/oauth-authorization-server` includes `exit1_agent_signup_endpoint`.
+
+## Error Responses
+
+Every error is JSON with `error` and `error_description`.
+
+| Status | `error` | Description |
+|---|---|---|
+| 400 | `invalid_request` | Missing or invalid email, or the address can't receive mail from exit1 |
+| 409 | `account_exists` | That email already has an exit1 account. Connect with OAuth or ask the user for an API key |
+| 429 | `temporarily_unavailable` | Daily signup limits reached. Retry tomorrow |
+| 503 | | Signup temporarily unavailable |

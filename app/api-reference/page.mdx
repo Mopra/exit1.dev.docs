@@ -53,6 +53,12 @@ https://us-central1-exit1-dev.cloudfunctions.net/publicApi
 | `POST /v1/public/alerts/webhooks/{id}/test` | `alerts:write` | [Send a test alert](/api-reference/webhook-alerts#send-a-test-alert) |
 | `DELETE /v1/public/alerts/webhooks/{id}` | `alerts:write` | [Delete a webhook](/api-reference/webhook-alerts#delete-a-webhook) |
 
+### Account Creation
+
+| Endpoint | Auth | Description |
+|---|---|---|
+| `POST https://app.exit1.dev/oauth/agent-signup` | None | [An AI agent signs its user up and gets a Bearer token](/api-reference/agent-signup) |
+
 ## Quick Start
 
 1. [Create an API key](/api-reference/authentication) with the appropriate [scopes](/api-reference/scopes)

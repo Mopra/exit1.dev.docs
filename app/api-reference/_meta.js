@@ -1,6 +1,7 @@
 export default {
   index: "Overview",
   authentication: "Authentication",
+  "agent-signup": "Agent Signup",
   scopes: "Scopes",
   "rate-limits": "Rate Limits",
   errors: "Errors",

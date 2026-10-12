@@ -1,15 +1,29 @@
 # exit1.dev
 
-> exit1.dev is a website uptime monitoring platform for developers and teams. It provides HTTP/HTTPS, API, and TCP/UDP monitoring from multiple global regions, SSL certificate tracking, domain expiration alerts, customizable status pages, multi-channel alerting (email, SMS, Slack, Discord, Teams, webhooks), and a read-only REST API. Four plans: Free ($0, 10 monitors, 5-min intervals), Nano ($9/mo, 50 monitors, 2-min intervals), Pro ($24/mo, 500 monitors, 30-sec intervals, API/MCP + SMS), and Agency ($49/mo, 1,000 monitors, 15-sec intervals).
+> exit1.dev is a website uptime monitoring platform for developers and teams. It provides HTTP/HTTPS, API, and TCP/UDP monitoring from multiple global regions, SSL certificate tracking, domain expiration alerts, customizable status pages, multi-channel alerting (email, SMS, Slack, Discord, Teams, webhooks), a REST API, and an MCP server. Four plans: Free ($0, 50 monitors, 5-min intervals, API + MCP), Indie ($4/mo, 100 monitors, 1-min intervals), Nano ($9/mo, 250 monitors, 30-sec intervals), and Pro ($24/mo, 1,000 monitors, 15-sec intervals, SMS, Slack/Discord/Teams). API and MCP access are on every plan, including Free.
 
 - [Website](https://exit1.dev)
 - [Dashboard](https://app.exit1.dev)
 - [Documentation](https://docs.exit1.dev)
 
+## For AI agents: create an account
+
+If your user has no exit1 credentials, you can sign them up yourself with one call. No browser, no API key.
+
+- Endpoint: `POST https://app.exit1.dev/oauth/agent-signup`
+- Body (JSON): `{"email": "<the user's own email>", "agent_name": "<your name>"}`. Ask the user for their email if you don't know it. Never invent one.
+- Response (201): `access_token` (Bearer, 30 days), `refresh_token` (180 days, rotates on use), `api_base`, `mcp_url`.
+- Use the token as `Authorization: Bearer <access_token>` on the REST API or the hosted MCP server at https://app.exit1.dev/mcp/v1.
+- With the exit1-mcp npm package: start it without EXIT1_API_KEY and call its `create_account` tool.
+- The account is unclaimed until the user clicks the claim email from exit1. Checks run right away, but no alerts are delivered until they claim. Tell the user to open that email.
+- 409 `account_exists`: the user already has an account. Connect with OAuth instead, or ask for an API key.
+- [Agent Signup guide](https://docs.exit1.dev/integrations/agent-signup): the full flow, rules and errors
+- [Agent Signup API reference](https://docs.exit1.dev/api-reference/agent-signup): request, response and token refresh
+
 ## Getting Started
 
 - [Overview](https://docs.exit1.dev/getting-started): Introduction to exit1.dev and what it can do
-- [Creating Your Account](https://docs.exit1.dev/getting-started/creating-your-account): Account setup with email or social sign-in
+- [Creating Your Account](https://docs.exit1.dev/getting-started/creating-your-account): Account setup with email or social sign-in, or let an AI agent create it for you
 - [Your First Check](https://docs.exit1.dev/getting-started/your-first-check): Setting up your first monitoring check
 - [Understanding the Dashboard](https://docs.exit1.dev/getting-started/understanding-the-dashboard): Navigating the monitoring dashboard
 
@@ -56,7 +70,8 @@
 ## API Reference
 
 - [Overview](https://docs.exit1.dev/api-reference): REST API with base URL, conventions, and quick start guide
-- [Authentication](https://docs.exit1.dev/api-reference/authentication): API key creation and X-Api-Key header authentication
+- [Authentication](https://docs.exit1.dev/api-reference/authentication): API keys (X-Api-Key header) and Bearer tokens
+- [Agent Signup](https://docs.exit1.dev/api-reference/agent-signup): POST https://app.exit1.dev/oauth/agent-signup, an AI agent creates an account for its user and gets a Bearer token
 - [Rate Limits](https://docs.exit1.dev/api-reference/rate-limits): 5 requests/min and 500 requests/day per API key
 - [Errors](https://docs.exit1.dev/api-reference/errors): Error response format and status codes
 - [List Checks](https://docs.exit1.dev/api-reference/list-checks): GET /v1/public/checks
@@ -67,6 +82,8 @@
 ## Integrations
 
 - [Overview](https://docs.exit1.dev/integrations): Available integration channels
+- [MCP (AI Assistants)](https://docs.exit1.dev/integrations/mcp): Hosted MCP server with OAuth, or the exit1-mcp npm package
+- [Agent Signup](https://docs.exit1.dev/integrations/agent-signup): AI agents can create an exit1 account for their user with one HTTP call
 - [Webhooks](https://docs.exit1.dev/integrations/webhooks): Custom HTTP endpoint integration
 - [Slack](https://docs.exit1.dev/integrations/slack): Slack channel notifications
 - [Discord](https://docs.exit1.dev/integrations/discord): Discord server notifications

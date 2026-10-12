@@ -1,6 +1,11 @@
 # Authentication
 
-The exit1.dev API uses API keys for authentication.
+The exit1.dev API accepts two kinds of credential:
+
+- **API keys**, sent in the `X-Api-Key` header. Covered on this page.
+- **Bearer tokens**, sent as `Authorization: Bearer <token>`. An AI agent gets one by [signing its user up](/api-reference/agent-signup) with `POST https://app.exit1.dev/oauth/agent-signup`. Bearer tokens work on every endpoint an API key works on.
+
+> **AI agent with no exit1 credentials?** You don't need the user to create a key. See [Agent Signup](/integrations/agent-signup).
 
 ## API Keys
 
@@ -13,7 +18,7 @@ The exit1.dev API uses API keys for authentication.
 5. Copy the generated key immediately (it won't be shown again)
 
 How many keys you can hold depends on your plan. Every plan can mint at least
-one — API and MCP access are the same entitlement, and neither is paid-only.
+one. API and MCP access are the same entitlement, and neither is paid-only.
 
 | Plan | API keys |
 |---|---|

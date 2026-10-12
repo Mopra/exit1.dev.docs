@@ -48,6 +48,10 @@ GET /v1/public/account
 
 The numbers above are an example. Read the real limits from the response rather than hardcoding them.
 
+### Unclaimed Accounts
+
+For an account created by [agent signup](/api-reference/agent-signup) that the user hasn't claimed yet, the response also contains `"claimed": false` and a `claimHint`. Until the account is claimed, no alerts are delivered. Tell the user to open the claim email from exit1. See [the rules](/integrations/agent-signup#the-rules).
+
 ### Response Fields
 
 | Field | Type | Description |

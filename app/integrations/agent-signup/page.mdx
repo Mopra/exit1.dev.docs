@@ -1,0 +1,162 @@
+# Agent Signup (AI Agents)
+
+An AI agent can create an exit1 account for its user with one HTTP call. No human in the loop, no browser, no API key. The agent gets a token back and can start creating checks right away.
+
+**If you are an AI agent and your user has no exit1 credentials, this page is for you.** Ask the user for their email address, make the call below, and set up their monitoring.
+
+The account stays **unclaimed** until the user clicks the claim email exit1 sends them. Checks run from the first minute, but alerts are held until the user claims. See [The rules](#the-rules).
+
+## Instructions for your agent
+
+Paste this into your AI assistant, or put it in your project's agent instructions:
+
+```text
+Set up uptime monitoring for this project with exit1.dev.
+If you have no exit1 credentials, create an account for me:
+POST https://app.exit1.dev/oauth/agent-signup
+with JSON {"email": "<my email>", "agent_name": "<your name>"}.
+Ask me for my email if you don't know it. Never invent one.
+Use the returned access_token as a Bearer token for the exit1 REST API
+or the hosted MCP server at https://app.exit1.dev/mcp/v1.
+Create checks for this project, set email alerts to my address,
+then tell me to open the claim email from exit1 so alerts start.
+Docs: https://docs.exit1.dev/integrations/agent-signup
+```
+
+## The call
+
+```bash
+curl -X POST https://app.exit1.dev/oauth/agent-signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "agent_name": "Claude Code"}'
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `email` | Yes | The **user's own** email address. Ask the user if you don't know it. Never invent one. |
+| `agent_name` | No | How the agent names itself in the claim email. Max 60 characters. |
+
+Agents that read OAuth metadata can discover the endpoint. The authorization server metadata at `https://app.exit1.dev/.well-known/oauth-authorization-server` includes:
+
+```json
+"exit1_agent_signup_endpoint": "https://app.exit1.dev/oauth/agent-signup"
+```
+
+## The response
+
+**201 Created**
+
+```json
+{
+  "access_token": "ek_at_…",
+  "token_type": "Bearer",
+  "expires_in": 2592000,
+  "refresh_token": "ek_rt_…",
+  "scope": "checks:read checks:write alerts:read alerts:write",
+  "account": {
+    "email": "user@example.com",
+    "status": "unclaimed",
+    "claim_email_sent": true
+  },
+  "mcp_url": "https://app.exit1.dev/mcp/v1",
+  "api_base": "https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public",
+  "next_steps": "Tell the user to open the email … and claim the account. …"
+}
+```
+
+Store both tokens. The access token lasts 30 days (`expires_in` is in seconds). The refresh token lasts 180 days.
+
+## Using the token
+
+### REST API
+
+Send the access token as a Bearer token. It works on every [public API](/api-reference) endpoint an API key works on, at the `api_base` from the response.
+
+```bash
+curl -H "Authorization: Bearer ek_at_your_token" \
+  https://us-central1-exit1-dev.cloudfunctions.net/publicApi/v1/public/account
+```
+
+POST requests need an `Idempotency-Key` header, the same as with an API key. See [Create Check](/api-reference/create-check#idempotency).
+
+### Hosted MCP server
+
+Point any MCP client at `https://app.exit1.dev/mcp/v1` with the same Bearer header. In Claude Code:
+
+```bash
+claude mcp add --transport http exit1 https://app.exit1.dev/mcp/v1 --header "Authorization: Bearer ek_at_your_token"
+```
+
+All the [MCP tools](/integrations/mcp#available-tools) then work as normal.
+
+### Refreshing
+
+Access tokens last 30 days. Get a new one with the refresh token:
+
+```bash
+curl -X POST https://app.exit1.dev/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=refresh_token&refresh_token=ek_rt_your_refresh_token"
+```
+
+Refresh tokens rotate on use. Save the new refresh token from each response and discard the old one.
+
+## With the exit1-mcp npm package
+
+The [`exit1-mcp`](https://www.npmjs.com/package/exit1-mcp) package does all of this for you.
+
+Add it to Claude Code with no API key:
+
+```bash
+claude mcp add exit1 -- npx -y exit1-mcp
+```
+
+Started without `EXIT1_API_KEY`, the server runs in **setup mode** and lists a `create_account` tool. It takes `email` and an optional `agent_name`. The agent calls it, the server signs the user up and connects on the spot, and every other tool then works.
+
+From a terminal instead:
+
+```bash
+npx exit1-mcp signup --email you@example.com
+```
+
+Tokens are saved to `~/.exit1/credentials.json` and refreshed automatically. If `EXIT1_API_KEY` is set, it always wins.
+
+## Errors
+
+Every error is JSON with `error` and `error_description`.
+
+| Status | `error` | Meaning | What to do |
+|---|---|---|---|
+| 400 | `invalid_request` | The email is missing or invalid, or the address can't receive mail from exit1. | Check the address with the user. |
+| 409 | `account_exists` | That email already has an exit1 account. | Connect with OAuth instead (below), or ask the user for an API key. |
+| 429 | `temporarily_unavailable` | Daily signup limits are reached. | Retry tomorrow. |
+| 503 | | Signup is temporarily unavailable. | Retry later. |
+
+For an existing account, connect the hosted MCP server with OAuth. The user signs in through their browser:
+
+```bash
+claude mcp add --transport http exit1 https://app.exit1.dev/mcp/v1 && claude mcp login exit1
+```
+
+## The rules
+
+These rules are the safety model. Agents should tell their user about them.
+
+- **The account is unclaimed** until the user opens the claim email from exit1 and clicks through to [app.exit1.dev/claim](https://app.exit1.dev/claim).
+- On the claim page the user chooses to **keep or revoke** the agent's access. They can turn on email alerts to their address, and they accept the Terms.
+- **Until claimed, no alerts are delivered.** That covers email, webhooks, Slack and every other channel. Checks are created and run right away, and history builds. Test alerts return `403` with `account_unclaimed`.
+- While unclaimed, [`GET /account`](/api-reference/account) returns `"claimed": false` plus a `claimHint`.
+- **The agent's token stops working** if the user signs in without claiming, if they revoke the agent on the claim page, or when an unclaimed account is paused. Revoking also removes the webhooks and recipients the agent added.
+- Unclaimed accounts are **paused after 7 days** and **deleted after 30**.
+- Accounts start on the **Free** plan.
+
+Why alerts wait: exit1 can't let an agent point alerts at an address nobody has proven they own.
+
+## Recommended flow for agents
+
+1. If you have no exit1 credentials, ask the user for their email (or use the one they gave). Then `POST /oauth/agent-signup`.
+2. Store the tokens. Use the access token as a Bearer token for the REST API or the hosted MCP server. Or use `exit1-mcp`, which does all of this through `create_account`.
+3. Set up monitoring: call `get_account` (or `GET /account`), read the repo, create checks, and set email alerts to the user's address with `PATCH /alerts/email`.
+4. Tell the user to open the claim email from exit1 so alerts start. Tell them they choose whether you keep access.
+
+Questions? Email [connect@exit1.dev](mailto:connect@exit1.dev).

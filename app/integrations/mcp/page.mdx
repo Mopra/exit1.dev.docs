@@ -4,6 +4,17 @@ Connect exit1.dev to AI assistants like Claude, Cursor, and Windsurf using the [
 
 **Available on every plan, including Free.** MCP access follows API access: they are the same entitlement, not two. Key counts: 1 on Free, 3 on Indie, 10 on Nano, 100 on Pro.
 
+## No exit1 account yet?
+
+**Your AI agent can create one for you.** You don't need to sign up in a browser first.
+
+- **With the npm package:** add `exit1-mcp` with no API key (`claude mcp add exit1 -- npx -y exit1-mcp`). It starts in setup mode with a `create_account` tool. Give your agent your email and it signs you up and connects on the spot. From a terminal: `npx exit1-mcp signup --email you@example.com`.
+- **With one HTTP call:** `POST https://app.exit1.dev/oauth/agent-signup` with `{"email": "you@example.com"}` returns a Bearer token for the REST API and the hosted MCP server.
+
+Checks run straight away. Alerts start once you open the claim email from exit1 and claim the account. Full details: [Agent Signup](/integrations/agent-signup).
+
+## Connecting an existing account
+
 There are two ways to connect:
 
 - **Hosted (recommended).** OAuth sign-in through your browser. No API key, no npm install, and it includes the write tools (create checks, configure alerts, send test alerts).
@@ -164,7 +175,7 @@ The hosted server has its own interactive-session limits (30 requests/min, 200 w
 | Daily per key | 500 requests/day |
 | Daily per user | 2,000 requests/day |
 
-Normal AI conversations use 2–5 tool calls, so you're unlikely to hit these limits in typical usage.
+Normal AI conversations use 2 to 5 tool calls, so you're unlikely to hit these limits in typical usage.
 
 ## Troubleshooting
 
