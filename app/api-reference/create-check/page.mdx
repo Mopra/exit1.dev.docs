@@ -36,6 +36,7 @@ POST /v1/public/checks
 | `redirectValidation` | object | No | For `redirect` checks: `{ "expectedTarget": "https://...", "matchMode": "contains" }`. `matchMode` is `contains` (default) or `exact` |
 | `maxRedirects` | integer | No | Maximum redirects to follow (0 to 10) |
 | `cacheControlNoCache` | boolean | No | Send `Cache-Control: no-cache` header (default: `false`) |
+| `ignoreSslErrors` | boolean | No | Accept invalid certificates (expired, self-signed, wrong host) and turn off SSL alerts for this check (default: `false`) |
 | `responseTimeLimit` | number | No | Max response time in milliseconds before the result is marked as slow (max 30,000) |
 | `downConfirmationAttempts` | number | No | Consecutive failures before the check is marked down (1 to 99) |
 | `recordTypes` | string[] | No | For `dns` checks: record types to monitor, any of `A`, `AAAA`, `CNAME`, `MX`, `TXT`, `NS`, `SOA` (default: `["A"]`) |

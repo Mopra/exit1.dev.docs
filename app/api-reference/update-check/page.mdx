@@ -35,6 +35,7 @@ All fields are optional. Only include the fields you want to change. No `Idempot
 | `redirectValidation` | object \| null | For `redirect` checks: `{ "expectedTarget": "...", "matchMode": "contains" }`, where `matchMode` is `contains` or `exact`. Send `null` to clear it |
 | `maxRedirects` | integer \| null | Maximum redirects to follow (0 to 10). Send `null` to clear it |
 | `cacheControlNoCache` | boolean | Send `Cache-Control: no-cache` header |
+| `ignoreSslErrors` | boolean | Accept invalid certificates and turn off SSL alerts for this check |
 | `immediateRecheckEnabled` | boolean | Enable immediate recheck on failure |
 | `responseTimeLimit` | number | Max response time in milliseconds (max 30,000) |
 | `downConfirmationAttempts` | number | Consecutive failures before the check is marked down (1 to 99) |

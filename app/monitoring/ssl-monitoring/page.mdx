@@ -53,6 +53,12 @@ Renewing the certificate stops the reminders. A check that is first seen inside 
 
 These alerts are sent through your configured alert channels (email, SMS, webhooks, Slack, Discord).
 
+## Ignoring Certificate Errors
+
+By default an invalid certificate fails the check: the TLS handshake is rejected and the check goes down. For an internal tool or a home server with a self-signed or expired certificate, that is not what you want.
+
+Turn on **Ignore SSL errors** in the check's HTTP configuration (or set `ignoreSslErrors: true` through the API). The check then accepts any certificate, so it stays up as long as the server answers. SSL alerts are turned off for that check too. The certificate details are still recorded, and turning the option off later alerts you if the certificate is still bad.
+
 ## Best Practices
 
 - Monitor all production HTTPS endpoints
